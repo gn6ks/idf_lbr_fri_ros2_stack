@@ -1,69 +1,335 @@
 <?xml version="1.0"?>
 
-<!-- top level -->
 <robot name="iiwa7" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <!-- propiedades rectangulo realidad-->
+    <!-- ================================================================
+         PROPIEDADES — Mesa/base rectangular
+    ================================================================ -->
     <xacro:property name="base_length" value="1.20" />   <!-- largo  X -->
-    <xacro:property name="base_width"  value="0.80" />   <!-- ancho  Y -->
+    <xacro:property name="base_width" value="0.80" />   <!-- ancho  Y -->
     <xacro:property name="base_height" value="1.00" />   <!-- alto   Z -->
-    <xacro:property name="base_mass"   value="40.0" />   <!-- kg       -->
-    <xacro:property name="robot_offset_x" value="0.40" /> <!-- extremo en X: (length/2 - margen) -->
+    <xacro:property name="base_mass" value="40.0" />   <!-- kg       -->
+    <xacro:property name="robot_offset_x" value="0.40" />
     <xacro:property name="robot_offset_y" value="0.0" />
 
     <xacro:property name="base_ixx" value="5.333" />
-    <xacro:property name="base_iyy" value="5.600" /> 
+    <xacro:property name="base_iyy" value="5.600" />
     <xacro:property name="base_izz" value="5.467" />
 
-    <xacro:property name="screen_offset_x"    value="-0.40" />
-    <xacro:property name="screen_offset_y"    value="0.0" />
-    <xacro:property name="screen_box_height"  value="0.20"  />
-    <xacro:property name="screen_panel_z"     value="0.20" />
+    <xacro:property name="screen_offset_x" value="-0.40" />
+    <xacro:property name="screen_offset_y" value="0.0" />
+    <xacro:property name="screen_box_height" value="0.20" />
+    <xacro:property name="screen_panel_z" value="0.20" />
 
-    <!-- include the iiwa macro and controller -->
+    <!-- ================================================================
+         INCLUDES externos (lbr_description)
+    ================================================================ -->
     <xacro:include filename="$(find lbr_description)/urdf/iiwa7/iiwa7.urdf.xacro" />
     <xacro:include filename="$(find lbr_description)/gazebo/lbr_gazebo.xacro" />
     <xacro:include filename="$(find lbr_description)/ros2_control/lbr_system_interface.xacro" />
 
-    <!-- arguments -->
+    <!-- ================================================================
+         ARGUMENTOS
+    ================================================================ -->
     <xacro:arg name="robot_name" default="lbr" />
     <xacro:arg name="mode" default="mock" />
-    <xacro:arg
-        name="joint_limits_path"
+    <xacro:arg name="joint_limits_path"
         default="$(find lbr_description)/urdf/iiwa7/joint_limits.yaml" />
-    <xacro:arg
-        name="system_config_path"
+    <xacro:arg name="system_config_path"
         default="$(find lbr_description)/ros2_control/lbr_system_config.yaml" />
-    <xacro:arg
-        name="initial_joint_positions_path"
+    <xacro:arg name="initial_joint_positions_path"
         default="$(find lbr_description)/ros2_control/initial_joint_positions.yaml" />
 
-    <!-- KDL requires a link without inertia / Gazebo requires a connection to world link or robot
-    will tipple https://github.com/lbr-stack/lbr_fri_ros2_stack/issues/230 -->
+    <!-- ================================================================
+         MACRO — Sensor de fuerza/torque Schunk FT45-1009 (ATI Mini45)
+         (antes en ft45_sensor.xacro)
+
+         Dimensiones reales (datasheet ATI Mini45):
+           Diámetro: 45 mm → radio 0.0225 m
+           Altura total: 16.5 mm → 0.0165 m
+           Masa: ~92 g → 0.092 kg
+           Ixx = Iyy = (1/12)*m*(3r²+h²) ≈ 1.68e-5
+           Izz  = (1/2)*m*r²             ≈ 2.33e-5
+    ================================================================ -->
+    <xacro:macro name="ft45_sensor"
+        params="parent prefix xyz:='0 0 0' rpy:='0 0 0'
+                         update_rate:='1000'
+                         noise_stddev_force:='0.01'
+                         noise_stddev_torque:='0.001'">
+
+        <!-- Cuerpo cilíndrico representativo -->
+        <link name="${prefix}_link">
+            <visual>
+                <geometry>
+                    <cylinder radius="0.0225" length="0.0165" />
+                </geometry>
+                <origin xyz="0 0 0.00825" rpy="0 0 0" />
+                <material name="ft45_silver">
+                    <color rgba="0.75 0.75 0.75 1.0" />
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="0.0225" length="0.0165" />
+                </geometry>
+                <origin xyz="0 0 0.00825" rpy="0 0 0" />
+            </collision>
+            <inertial>
+                <mass value="0.092" />
+                <origin xyz="0 0 0.00825" rpy="0 0 0" />
+                <inertia ixx="1.68e-5" ixy="0" ixz="0"
+                    iyy="1.68e-5" iyz="0"
+                    izz="2.33e-5" />
+            </inertial>
+        </link>
+
+        <joint name="${prefix}_joint" type="fixed">
+            <parent link="${parent}" />
+            <child link="${prefix}_link" />
+            <origin xyz="${xyz}" rpy="${rpy}" />
+        </joint>
+
+        <!-- Punto de medida (cara inferior del sensor) -->
+        <link name="${prefix}_measuring_point">
+            <inertial>
+                <mass value="0.001" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <inertia ixx="1e-9" ixy="0" ixz="0"
+                    iyy="1e-9" iyz="0" izz="1e-9" />
+            </inertial>
+        </link>
+
+        <joint name="${prefix}_measuring_point_joint" type="fixed">
+            <parent link="${prefix}_link" />
+            <child link="${prefix}_measuring_point" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+        <!-- Plugin Gazebo (comentado — descomentar cuando se active la simulación) -->
+        <gazebo reference="${prefix}_link">
+            <!--          <sensor name="${prefix}_ft_sensor" type="force_torque">
+            <always_on>true</always_on>
+            <update_rate>${update_rate}</update_rate>
+            <visualize>false</visualize>
+            <force_torque>
+              <frame>${prefix}_measuring_point</frame>
+              <measure_direction>child_to_parent</measure_direction>
+              <force>
+                <x><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_force}</stddev></noise></x>
+                <y><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_force}</stddev></noise></y>
+                <z><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_force}</stddev></noise></z>
+              </force>
+              <torque>
+                <x><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_torque}</stddev></noise></x>
+                <y><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_torque}</stddev></noise></y>
+                <z><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_torque}</stddev></noise></z>
+              </torque>
+            </force_torque>
+            <plugin name="${prefix}_plugin" filename="libgazebo_ros_ft_sensor.so">
+              <ros>
+                <namespace></namespace>
+                <remapping>wrench:=/${prefix}/wrench</remapping>
+              </ros>
+              <body_name>${prefix}_link</body_name>
+              <joint_name>${prefix}_joint</joint_name>
+              <frame_name>${prefix}_measuring_point</frame_name>
+              <update_rate>${update_rate}</update_rate>
+            </plugin>
+          </sensor>-->
+        </gazebo>
+
+        <gazebo reference="${prefix}_link">
+            <material>Gazebo/Silver</material>
+            <mu1>0.5</mu1>
+            <mu2>0.5</mu2>
+        </gazebo>
+
+    </xacro:macro>
+
+    <!-- ================================================================
+         MACRO — End-effector de pulido (adaptador + backing pad + foam pad)
+         (antes en polishing_tool.xacro)
+
+         Cadena:   adapter (negro) → backing pad (rojo, Ø125mm)
+                                   → foam pad   (verde, Ø125mm, h35mm)
+                                   → tcp_link   (TCP / punto de contacto)
+    ================================================================ -->
+    <xacro:macro name="polishing_tool"
+        params="parent prefix xyz:='0 0 0' rpy:='0 0 0'">
+
+        <!-- 1. Adaptador negro — puente entre FT45 y backing pad -->
+        <link name="${prefix}_adapter_link">
+            <visual>
+                <geometry>
+                    <cylinder radius="0.014" length="0.018" />
+                </geometry>
+                <origin xyz="0 0 0.009" rpy="0 0 0" />
+                <material name="adapter_black">
+                    <color rgba="0.1 0.1 0.1 1.0" />
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="0.014" length="0.018" />
+                </geometry>
+                <origin xyz="0 0 0.009" rpy="0 0 0" />
+            </collision>
+            <inertial>
+                <mass value="0.030" />
+                <origin xyz="0 0 0.009" rpy="0 0 0" />
+                <!-- Inercias: r=0.014m, h=0.018m -->
+                <inertia ixx="2.1e-6" ixy="0" ixz="0"
+                    iyy="2.1e-6" iyz="0"
+                    izz="2.9e-6" />
+            </inertial>
+        </link>
+
+        <joint name="${prefix}_adapter_joint" type="fixed">
+            <parent link="${parent}" />
+            <child link="${prefix}_adapter_link" />
+            <origin xyz="${xyz}" rpy="${rpy}" />
+        </joint>
+
+        <!-- 2. Backing pad rojo (soporte de velcro, cono aprox. cilindro) -->
+        <link name="${prefix}_backing_pad_link">
+            <visual>
+                <geometry>
+                    <cylinder radius="0.0625" length="0.022" />
+                </geometry>
+                <origin xyz="0 0 0.011" rpy="0 0 0" />
+                <material name="backing_pad_red">
+                    <color rgba="0.85 0.1 0.1 1.0" />
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="0.0625" length="0.022" />
+                </geometry>
+                <origin xyz="0 0 0.011" rpy="0 0 0" />
+            </collision>
+            <inertial>
+                <mass value="0.150" />
+                <origin xyz="0 0 0.011" rpy="0 0 0" />
+                <!-- Inercias: r=0.0625m, h=0.022m -->
+                <inertia ixx="1.87e-4" ixy="0" ixz="0"
+                    iyy="1.87e-4" iyz="0"
+                    izz="2.93e-4" />
+            </inertial>
+        </link>
+
+        <joint name="${prefix}_backing_pad_joint" type="fixed">
+            <parent link="${prefix}_adapter_link" />
+            <child link="${prefix}_backing_pad_link" />
+            <origin xyz="0 0 0.018" rpy="0 0 0" />
+        </joint>
+
+        <!-- 3. Foam pad verde (esponja de pulido) -->
+        <link name="${prefix}_foam_pad_link">
+            <visual>
+                <geometry>
+                    <cylinder radius="0.0625" length="0.035" />
+                </geometry>
+                <origin xyz="0 0 0.0175" rpy="0 0 0" />
+                <material name="foam_pad_green">
+                    <color rgba="0.1 0.65 0.45 1.0" />
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="0.0625" length="0.035" />
+                </geometry>
+                <origin xyz="0 0 0.0175" rpy="0 0 0" />
+            </collision>
+            <inertial>
+                <mass value="0.060" />
+                <origin xyz="0 0 0.0175" rpy="0 0 0" />
+                <!-- Inercias: r=0.0625m, h=0.035m -->
+                <inertia ixx="8.1e-5" ixy="0" ixz="0"
+                    iyy="8.1e-5" iyz="0"
+                    izz="1.17e-4" />
+            </inertial>
+        </link>
+
+        <joint name="${prefix}_foam_pad_joint" type="fixed">
+            <parent link="${prefix}_backing_pad_link" />
+            <child link="${prefix}_foam_pad_link" />
+            <origin xyz="0 0 0.022" rpy="0 0 0" />
+        </joint>
+
+        <!-- 4. TCP — punto de referencia para cinemática inversa (cara activa de la esponja) -->
+        <link name="${prefix}_tcp_link">
+            <visual>
+                <geometry>
+                    <sphere radius="0.003" />
+                </geometry>
+                <material name="tcp_yellow">
+                    <color rgba="1.0 0.8 0.0 0.8" />
+                </material>
+            </visual>
+            <inertial>
+                <mass value="0.001" />
+                <inertia ixx="1e-9" ixy="0" ixz="0"
+                    iyy="1e-9" iyz="0" izz="1e-9" />
+            </inertial>
+        </link>
+
+        <joint name="${prefix}_tcp_joint" type="fixed">
+            <parent link="${prefix}_foam_pad_link" />
+            <child link="${prefix}_tcp_link" />
+            <origin xyz="0 0 0.035" rpy="0 0 0" />
+        </joint>
+
+        <!-- Propiedades de contacto Gazebo -->
+        <gazebo reference="${prefix}_foam_pad_link">
+            <material>Gazebo/Green</material>
+            <kp>500.0</kp>      <!-- rigidez blanda (esponja) -->
+            <kd>50.0</kd>
+            <mu1>0.4</mu1>
+            <mu2>0.4</mu2>
+            <minDepth>0.001</minDepth>
+            <maxVel>1.0</maxVel>
+        </gazebo>
+
+        <gazebo reference="${prefix}_backing_pad_link">
+            <material>Gazebo/Red</material>
+            <kp>10000.0</kp>
+            <kd>100.0</kd>
+            <mu1>0.6</mu1>
+            <mu2>0.6</mu2>
+        </gazebo>
+
+        <gazebo reference="${prefix}_adapter_link">
+            <material>Gazebo/DarkGrey</material>
+        </gazebo>
+
+    </xacro:macro>
+
+    <!-- ================================================================
+         WORLD LINK
+         KDL requiere link sin inercia / Gazebo requiere conexión a world
+         https://github.com/lbr-stack/lbr_fri_ros2_stack/issues/230
+    ================================================================ -->
     <link name="world" />
 
-    <!-- esto estaba antes de los cambios (dejalo por si acaso o algo twin)-->
-    <!--joint
-        between <robot_name>_world_link and robot_name_link_0-->
-<!--     <joint name="$(arg robot_name)_world_joint" type="fixed">
-        <parent link="world" />
-        <child link="$(arg robot_name)_link_0" />
-    </joint> -->
-
-    <!-- world base rectangular -->
+    <!-- ================================================================
+         JOINTS — world → base → robot
+    ================================================================ -->
     <joint name="$(arg robot_name)_world_base_joint" type="fixed">
         <parent link="world" />
-        <child  link="$(arg robot_name)_base_link" />
+        <child link="$(arg robot_name)_base_link" />
         <origin xyz="0 0 ${base_height / 2}" rpy="0 0 0" />
     </joint>
 
+    <!-- ================================================================
+         LINKS — Mesa/base rectangular
+    ================================================================ -->
     <link name="$(arg robot_name)_base_link">
         <inertial>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <mass value="${base_mass}" />
             <inertia ixx="${base_ixx}" ixy="0.0" ixz="0.0"
-                    iyy="${base_iyy}" iyz="0.0"
-                    izz="${base_izz}" />
+                iyy="${base_iyy}" iyz="0.0"
+                izz="${base_izz}" />
         </inertial>
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -71,7 +337,7 @@
                 <box size="${base_length} ${base_width} ${base_height}" />
             </geometry>
             <material name="base_material">
-               <color rgba="0.1 0.3 0.6 1.0" /> 
+                <color rgba="0.1 0.3 0.6 1.0" />
             </material>
         </visual>
         <collision>
@@ -82,16 +348,15 @@
         </collision>
     </link>
 
-    <!-- Pantalla en el extremo opuesto al robot -->
+    <!-- Soporte/caja de la pantalla -->
     <link name="$(arg robot_name)_screen_link">
         <inertial>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <mass value="3.0" />
             <inertia ixx="0.05" ixy="0.0" ixz="0.0"
-                    iyy="0.03" iyz="0.0"
-                    izz="0.07" />
+                iyy="0.03" iyz="0.0"
+                izz="0.07" />
         </inertial>
-        <!-- Caja base/soporte -->
         <visual>
             <origin xyz="0 0 ${screen_box_height / 2}" rpy="0 0 0" />
             <geometry>
@@ -115,10 +380,9 @@
             <origin xyz="0 0 0" rpy="0 0 0" />
             <mass value="1.5" />
             <inertia ixx="0.02" ixy="0.0" ixz="0.0"
-                    iyy="0.02" iyz="0.0"
-                    izz="0.01" />
+                iyy="0.02" iyz="0.0"
+                izz="0.01" />
         </inertial>
-        <!-- Panel -->
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
@@ -136,37 +400,51 @@
         </collision>
     </link>
 
-    <!-- joint de la base de la pantalla la cosa esa gris-->
     <joint name="$(arg robot_name)_base_screen_joint" type="fixed">
         <parent link="$(arg robot_name)_base_link" />
-        <child  link="$(arg robot_name)_screen_link" />
+        <child link="$(arg robot_name)_screen_link" />
         <origin xyz="${screen_offset_x} ${screen_offset_y} ${base_height / 2}" rpy="0 0 1.5708" />
     </joint>
 
-    <!-- Joint soporte panel inclinado-->
     <joint name="$(arg robot_name)_screen_panel_joint" type="fixed">
         <parent link="$(arg robot_name)_screen_link" />
-        <child  link="$(arg robot_name)_screen_panel_link" />
+        <child link="$(arg robot_name)_screen_panel_link" />
         <origin xyz="0 0.075 ${screen_box_height + screen_panel_z * 0.5}" rpy="0.35 0 0" />
     </joint>
 
-    <!-- base rectangular enganchado a lbr_link_0 -->
     <joint name="$(arg robot_name)_base_robot_joint" type="fixed">
         <parent link="$(arg robot_name)_base_link" />
-        <child  link="$(arg robot_name)_link_0" />
+        <child link="$(arg robot_name)_link_0" />
         <origin xyz="${robot_offset_x} ${robot_offset_y} ${base_height / 2}" rpy="0 0 0" />
     </joint>
 
-    <!-- macros for gazebo / mock / hardware -->
+    <!-- ================================================================
+         INSTANCIACIÓN DE MACROS — Gazebo / control / robot / end-effector
+    ================================================================ -->
     <xacro:lbr_gazebo robot_name="$(arg robot_name)" />
+
     <xacro:lbr_system_interface
         robot_name="$(arg robot_name)"
         mode="$(arg mode)"
         system_config_path="$(arg system_config_path)"
         initial_joint_positions_path="$(arg initial_joint_positions_path)" />
 
-    <!-- iiwa description -->
     <xacro:iiwa7
         robot_name="$(arg robot_name)"
         joint_limits_path="$(arg joint_limits_path)" />
+
+    <!-- Sensor FT45 montado en link_7 -->
+    <xacro:ft45_sensor
+        parent="$(arg robot_name)_link_7"
+        prefix="ft45"
+        xyz="0 0 0.035"
+        rpy="0 0 0" />
+
+    <!-- Herramienta de pulido montada en el punto de medida del FT45 -->
+    <xacro:polishing_tool
+        parent="ft45_measuring_point"
+        prefix="tool"
+        xyz="0 0 0"
+        rpy="0 0 0" />
+
 </robot>

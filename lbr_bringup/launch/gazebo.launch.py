@@ -7,6 +7,7 @@ from launch.substitutions import (
     PathSubstitution,
 )
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue  # nuevo parametro description para forzar el tipo con str
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -49,28 +50,29 @@ def generate_launch_description() -> LaunchDescription:
                 output="screen",
                 parameters=[
                     {
-                        "robot_description": Command(
-                            [
-                                FindExecutable(name="xacro"),
-                                " ",
-                                PathSubstitution(FindPackageShare("lbr_description"))
-                                / "urdf"
-                                / LaunchConfiguration("model")
-                                / LaunchConfiguration("model"),
-                                ".xacro",
-                                " robot_name:=",
-                                LaunchConfiguration("robot_name"),
-                                " mode:=gazebo",
-                                " initial_joint_positions_path:=",
-                                PathSubstitution(
-                                    FindPackageShare(
-                                        LaunchConfiguration("init_jnt_pos_pkg")
+                        "robot_description": ParameterValue(  # se envuelve aqui
+                            Command(
+                                [
+                                    FindExecutable(name="xacro"),
+                                    " ",
+                                    PathSubstitution(FindPackageShare("lbr_description"))
+                                    / "urdf"
+                                    / LaunchConfiguration("model")
+                                    / LaunchConfiguration("model"),
+                                    ".xacro",
+                                    " robot_name:=",
+                                    LaunchConfiguration("robot_name"),
+                                    " mode:=gazebo",
+                                    " initial_joint_positions_path:=",
+                                    PathSubstitution(
+                                        FindPackageShare(
+                                            LaunchConfiguration("init_jnt_pos_pkg")
+                                        )
                                     )
-                                )
-                                / LaunchConfiguration(
-                                    "init_jnt_pos",
-                                ),
-                            ]
+                                    / LaunchConfiguration("init_jnt_pos"),
+                                ]
+                            ),
+                            value_type=str,  # fuerza tipo string para que se trague la descripcion entera
                         )
                     },
                     {"use_sim_time": True},
@@ -84,7 +86,7 @@ def generate_launch_description() -> LaunchDescription:
                 / "launch"
                 / "gz_sim.launch.py",
                 launch_arguments={"gz_args": "-r empty.sdf"}.items(),
-            ),  # Gazebo has its own controller manager
+            ),
             Node(
                 package="ros_gz_bridge",
                 executable="parameter_bridge",
@@ -100,22 +102,16 @@ def generate_launch_description() -> LaunchDescription:
                     "-name",
                     LaunchConfiguration("robot_name"),
                     "-allow_renaming",
-                    "-x",
-                    "0.0",
-                    "-y",
-                    "0.0",
-                    "-z",
-                    "0.0",
-                    "-R",
-                    "0.0",
-                    "-P",
-                    "0.0",
-                    "-Y",
-                    "0.0",
+                    "-x", "0.0",
+                    "-y", "0.0",
+                    "-z", "0.0",
+                    "-R", "0.0",
+                    "-P", "0.0",
+                    "-Y", "0.0",
                 ],
                 output="screen",
                 namespace=LaunchConfiguration("robot_name"),
-            ),  # spawns robot in Gazebo through robot_description topic of robot_state_publisher
+            ),
             Node(
                 package="controller_manager",
                 executable="spawner",
