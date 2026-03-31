@@ -3,7 +3,7 @@
 <robot name="iiwa7" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <!-- ================================================================
-         PROPIEDADES — Mesa/base rectangular
+         propiedades — base carrito
     ================================================================ -->
     <xacro:property name="base_length" value="1.20" />   <!-- largo  X -->
     <xacro:property name="base_width" value="0.80" />   <!-- ancho  Y -->
@@ -22,14 +22,14 @@
     <xacro:property name="screen_panel_z" value="0.20" />
 
     <!-- ================================================================
-         INCLUDES externos (lbr_description)
+         includes de los archivos lbr_description del botardo
     ================================================================ -->
     <xacro:include filename="$(find lbr_description)/urdf/iiwa7/iiwa7.urdf.xacro" />
     <xacro:include filename="$(find lbr_description)/gazebo/lbr_gazebo.xacro" />
     <xacro:include filename="$(find lbr_description)/ros2_control/lbr_system_interface.xacro" />
 
     <!-- ================================================================
-         ARGUMENTOS
+         argumentos
     ================================================================ -->
     <xacro:arg name="robot_name" default="lbr" />
     <xacro:arg name="mode" default="mock" />
@@ -57,7 +57,7 @@
                          noise_stddev_force:='0.01'
                          noise_stddev_torque:='0.001'">
 
-        <!-- Cuerpo cilíndrico representativo -->
+        <!-- cilindro -->
         <link name="${prefix}_link">
             <visual>
                 <geometry>
@@ -89,7 +89,7 @@
             <origin xyz="${xyz}" rpy="${rpy}" />
         </joint>
 
-        <!-- Punto de medida (cara inferior del sensor) -->
+        <!-- punto de medida, la cara inversa al sensor -->
         <link name="${prefix}_measuring_point">
             <inertial>
                 <mass value="0.001" />
@@ -105,37 +105,67 @@
             <origin xyz="0 0 0" rpy="0 0 0" />
         </joint>
 
-        <!-- Plugin Gazebo (comentado — descomentar cuando se active la simulación) -->
+        <!-- plugin gazebo que sigue dando errores, error de SDF de frames invalidos -->
         <gazebo reference="${prefix}_link">
-            <!--          <sensor name="${prefix}_ft_sensor" type="force_torque">
-            <always_on>true</always_on>
-            <update_rate>${update_rate}</update_rate>
-            <visualize>false</visualize>
-            <force_torque>
-              <frame>${prefix}_measuring_point</frame>
-              <measure_direction>child_to_parent</measure_direction>
-              <force>
-                <x><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_force}</stddev></noise></x>
-                <y><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_force}</stddev></noise></y>
-                <z><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_force}</stddev></noise></z>
-              </force>
-              <torque>
-                <x><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_torque}</stddev></noise></x>
-                <y><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_torque}</stddev></noise></y>
-                <z><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_torque}</stddev></noise></z>
-              </torque>
-            </force_torque>
-            <plugin name="${prefix}_plugin" filename="libgazebo_ros_ft_sensor.so">
-              <ros>
-                <namespace></namespace>
-                <remapping>wrench:=/${prefix}/wrench</remapping>
-              </ros>
-              <body_name>${prefix}_link</body_name>
-              <joint_name>${prefix}_joint</joint_name>
-              <frame_name>${prefix}_measuring_point</frame_name>
-              <update_rate>${update_rate}</update_rate>
-            </plugin>
-          </sensor>-->
+            <!--<sensor name="${prefix}_ft_sensor" type="force_torque">
+                <always_on>true</always_on>
+                <update_rate>${update_rate}</update_rate>
+                <visualize>false</visualize>
+                <force_torque>
+                    <frame>${prefix}_measuring_point</frame>
+                    <measure_direction>child_to_parent</measure_direction>
+                    <force>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>${noise_stddev_force}</stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>${noise_stddev_force}</stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>${noise_stddev_force}</stddev>
+                            </noise>
+                        </z>
+                    </force>
+                    <torque>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>${noise_stddev_torque}</stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>${noise_stddev_torque}</stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>${noise_stddev_torque}</stddev>
+                            </noise>
+                        </z>
+                    </torque>
+                </force_torque>
+                <plugin name="${prefix}_plugin" filename="libgazebo_ros_ft_sensor.so">
+                    <ros>
+                        <namespace></namespace>
+                        <remapping>wrench:=/${prefix}/wrench</remapping>
+                    </ros>
+                    <body_name>${prefix}_link</body_name>
+                    <joint_name>${prefix}_joint</joint_name>
+                    <frame_name>${prefix}_measuring_point</frame_name>
+                    <update_rate>${update_rate}</update_rate>
+                </plugin>
+            </sensor>-->
         </gazebo>
 
         <gazebo reference="${prefix}_link">
@@ -148,7 +178,6 @@
 
     <!-- ================================================================
          MACRO — End-effector de pulido (adaptador + backing pad + foam pad)
-         (antes en polishing_tool.xacro)
 
          Cadena:   adapter (negro) → backing pad (rojo, Ø125mm)
                                    → foam pad   (verde, Ø125mm, h35mm)
@@ -190,7 +219,7 @@
             <origin xyz="${xyz}" rpy="${rpy}" />
         </joint>
 
-        <!-- 2. Backing pad rojo (soporte de velcro, cono aprox. cilindro) -->
+        <!-- zona roja para cascar las esponjas bob -->
         <link name="${prefix}_backing_pad_link">
             <visual>
                 <geometry>
@@ -223,7 +252,7 @@
             <origin xyz="0 0 0.018" rpy="0 0 0" />
         </joint>
 
-        <!-- 3. Foam pad verde (esponja de pulido) -->
+        <!-- esponja verdae -->
         <link name="${prefix}_foam_pad_link">
             <visual>
                 <geometry>
@@ -256,7 +285,7 @@
             <origin xyz="0 0 0.022" rpy="0 0 0" />
         </joint>
 
-        <!-- 4. TCP — punto de referencia para cinemática inversa (cara activa de la esponja) -->
+        <!-- punto TCP para las cinematicas inversas -->
         <link name="${prefix}_tcp_link">
             <visual>
                 <geometry>
@@ -279,10 +308,10 @@
             <origin xyz="0 0 0.035" rpy="0 0 0" />
         </joint>
 
-        <!-- Propiedades de contacto Gazebo -->
+        <!-- propiedades de contacto para Gazebo -->
         <gazebo reference="${prefix}_foam_pad_link">
             <material>Gazebo/Green</material>
-            <kp>500.0</kp>      <!-- rigidez blanda (esponja) -->
+            <kp>500.0</kp>      <!-- rigidez blanda -->
             <kd>50.0</kd>
             <mu1>0.4</mu1>
             <mu2>0.4</mu2>
@@ -312,7 +341,7 @@
     <link name="world" />
 
     <!-- ================================================================
-         JOINTS — world → base → robot
+         encajes — world → base → robot
     ================================================================ -->
     <joint name="$(arg robot_name)_world_base_joint" type="fixed">
         <parent link="world" />
@@ -321,7 +350,7 @@
     </joint>
 
     <!-- ================================================================
-         LINKS — Mesa/base rectangular
+         links — Mesa/base rectangular
     ================================================================ -->
     <link name="$(arg robot_name)_base_link">
         <inertial>
@@ -419,7 +448,7 @@
     </joint>
 
     <!-- ================================================================
-         INSTANCIACIÓN DE MACROS — Gazebo / control / robot / end-effector
+         macros instancias
     ================================================================ -->
     <xacro:lbr_gazebo robot_name="$(arg robot_name)" />
 
