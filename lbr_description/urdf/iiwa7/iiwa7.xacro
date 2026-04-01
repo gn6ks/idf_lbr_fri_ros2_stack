@@ -6,7 +6,7 @@
     <xacro:property name="base_mass" value="40.0" />   <!-- kg -->
     <xacro:property name="robot_offset_x" value="0.40" />
     <xacro:property name="robot_offset_y" value="0.0" />
-    <xacro:property name="base_height" value="0.983" />   
+    <xacro:property name="base_height" value="0.983" />
     <xacro:property name="base_ixx" value="5.333" />
     <xacro:property name="base_iyy" value="5.600" />
     <xacro:property name="base_izz" value="5.467" />
@@ -326,15 +326,25 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="$(find lbr_description)/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.dae" />
+                <mesh
+                    filename="$(find lbr_description)/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.dae" />
             </geometry>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="$(find lbr_description)/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.stl" scale="0.001 0.001 0.001"/>
+                <mesh
+                    filename="$(find lbr_description)/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.stl" />
+              <!--  <box size="1 1 1" />-->
             </geometry>
         </collision>
+
+        <self_collision_checking>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <capsule radius="0.15" length="0.25" />
+            </geometry>
+        </self_collision_checking>
     </link>
 
     <joint name="$(arg robot_name)_base_robot_joint" type="fixed">
