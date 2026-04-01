@@ -327,14 +327,14 @@
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh
-                    filename="$(find lbr_description)/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.dae" />
+                    filename="package://lbr_description/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.dae" />
             </geometry>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh
-                    filename="$(find lbr_description)/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.stl"
+                    filename="package://lbr_description/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.stl"
                     scale="0.001 0.001 0.001" />
             </geometry>
         </collision>
