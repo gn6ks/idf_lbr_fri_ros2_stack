@@ -340,7 +340,7 @@
     <joint name="$(arg robot_name)_base_robot_joint" type="fixed">
         <parent link="$(arg robot_name)_base_link" />
         <child link="$(arg robot_name)_link_0" />
-        <origin xyz="${robot_offset_x} ${robot_offset_y} 0.323" rpy="0 0 0" />
+        <origin xyz="${robot_offset_x} ${robot_offset_y} 0" rpy="0 0 0" />
     </joint>
 
     <!-- macros instancias-->
