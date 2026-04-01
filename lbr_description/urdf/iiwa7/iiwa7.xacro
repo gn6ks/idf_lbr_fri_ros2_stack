@@ -334,17 +334,10 @@
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh
-                    filename="$(find lbr_description)/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.stl" />
-              <!--  <box size="1 1 1" />-->
+                    filename="$(find lbr_description)/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.stl"
+                    scale="0.001 0.001 0.001" />
             </geometry>
         </collision>
-
-        <self_collision_checking>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <geometry>
-                <capsule radius="0.15" length="0.25" />
-            </geometry>
-        </self_collision_checking>
     </link>
 
     <joint name="$(arg robot_name)_base_robot_joint" type="fixed">
