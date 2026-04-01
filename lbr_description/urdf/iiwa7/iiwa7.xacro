@@ -2,35 +2,21 @@
 
 <robot name="iiwa7" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <!-- ================================================================
-         propiedades — base carrito
-    ================================================================ -->
-    <xacro:property name="base_length" value="1.20" />   <!-- largo  X -->
-    <xacro:property name="base_width" value="0.80" />   <!-- ancho  Y -->
-    <xacro:property name="base_height" value="1.00" />   <!-- alto   Z -->
-    <xacro:property name="base_mass" value="40.0" />   <!-- kg       -->
+    <!-- base carrito -->
+    <xacro:property name="base_mass" value="40.0" />   <!-- kg -->
     <xacro:property name="robot_offset_x" value="0.40" />
     <xacro:property name="robot_offset_y" value="0.0" />
-
+    <xacro:property name="base_height" value="0.983" />   
     <xacro:property name="base_ixx" value="5.333" />
     <xacro:property name="base_iyy" value="5.600" />
     <xacro:property name="base_izz" value="5.467" />
 
-    <xacro:property name="screen_offset_x" value="-0.40" />
-    <xacro:property name="screen_offset_y" value="0.0" />
-    <xacro:property name="screen_box_height" value="0.20" />
-    <xacro:property name="screen_panel_z" value="0.20" />
-
-    <!-- ================================================================
-         includes de los archivos lbr_description del botardo
-    ================================================================ -->
+    <!-- includes de los archivos lbr_description del botardo -->
     <xacro:include filename="$(find lbr_description)/urdf/iiwa7/iiwa7.urdf.xacro" />
     <xacro:include filename="$(find lbr_description)/gazebo/lbr_gazebo.xacro" />
     <xacro:include filename="$(find lbr_description)/ros2_control/lbr_system_interface.xacro" />
 
-    <!-- ================================================================
-         argumentos
-    ================================================================ -->
+    <!-- args-->
     <xacro:arg name="robot_name" default="lbr" />
     <xacro:arg name="mode" default="mock" />
     <xacro:arg name="joint_limits_path"
@@ -40,17 +26,7 @@
     <xacro:arg name="initial_joint_positions_path"
         default="$(find lbr_description)/ros2_control/initial_joint_positions.yaml" />
 
-    <!-- ================================================================
-         MACRO — Sensor de fuerza/torque Schunk FT45-1009 (ATI Mini45)
-         (antes en ft45_sensor.xacro)
-
-         Dimensiones reales (datasheet ATI Mini45):
-           Diámetro: 45 mm → radio 0.0225 m
-           Altura total: 16.5 mm → 0.0165 m
-           Masa: ~92 g → 0.092 kg
-           Ixx = Iyy = (1/12)*m*(3r²+h²) ≈ 1.68e-5
-           Izz  = (1/2)*m*r²             ≈ 2.33e-5
-    ================================================================ -->
+    <!-- sensor de fuerza/torque schunk FT45-1009 -->
     <xacro:macro name="ft45_sensor"
         params="parent prefix xyz:='0 0 0' rpy:='0 0 0'
                          update_rate:='1000'
@@ -107,7 +83,8 @@
 
         <!-- plugin gazebo que sigue dando errores, error de SDF de frames invalidos -->
         <gazebo reference="${prefix}_link">
-            <!--<sensor name="${prefix}_ft_sensor" type="force_torque">
+            <!--<sensor
+            name="${prefix}_ft_sensor" type="force_torque">
                 <always_on>true</always_on>
                 <update_rate>${update_rate}</update_rate>
                 <visualize>false</visualize>
@@ -176,17 +153,11 @@
 
     </xacro:macro>
 
-    <!-- ================================================================
-         MACRO — End-effector de pulido (adaptador + backing pad + foam pad)
-
-         Cadena:   adapter (negro) → backing pad (rojo, Ø125mm)
-                                   → foam pad   (verde, Ø125mm, h35mm)
-                                   → tcp_link   (TCP / punto de contacto)
-    ================================================================ -->
+    <!-- (adaptador + backing pad + foam pad) -->
     <xacro:macro name="polishing_tool"
         params="parent prefix xyz:='0 0 0' rpy:='0 0 0'">
 
-        <!-- 1. Adaptador negro — puente entre FT45 y backing pad -->
+        <!-- 1. adaptador negro — puente entre FT45 y backing pad -->
         <link name="${prefix}_adapter_link">
             <visual>
                 <geometry>
@@ -333,25 +304,17 @@
 
     </xacro:macro>
 
-    <!-- ================================================================
-         WORLD LINK
-         KDL requiere link sin inercia / Gazebo requiere conexión a world
-         https://github.com/lbr-stack/lbr_fri_ros2_stack/issues/230
-    ================================================================ -->
+    <!-- world link mirar error https://github.com/lbr-stack/lbr_fri_ros2_stack/issues/230 -->
     <link name="world" />
 
-    <!-- ================================================================
-         encajes — world → base → robot
-    ================================================================ -->
+    <!-- wolrd base joint para la base 660mm por encima del punto origen -->
     <joint name="$(arg robot_name)_world_base_joint" type="fixed">
         <parent link="world" />
         <child link="$(arg robot_name)_base_link" />
-        <origin xyz="0 0 ${base_height / 2}" rpy="0 0 0" />
+        <origin xyz="0 0 0.660" rpy="0 0 0" />
     </joint>
 
-    <!-- ================================================================
-         links — Mesa/base rectangular
-    ================================================================ -->
+    <!-- links de las mallas reales del carrito -->
     <link name="$(arg robot_name)_base_link">
         <inertial>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -363,93 +326,24 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <box size="${base_length} ${base_width} ${base_height}" />
+                <mesh filename="$(find lbr_description)/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.dae" />
             </geometry>
-            <material name="base_material">
-                <color rgba="0.1 0.3 0.6 1.0" />
-            </material>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <box size="${base_length} ${base_width} ${base_height}" />
+                <mesh filename="$(find lbr_description)/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.stl" scale="0.001 0.001 0.001"/>
             </geometry>
         </collision>
     </link>
-
-    <!-- Soporte/caja de la pantalla -->
-    <link name="$(arg robot_name)_screen_link">
-        <inertial>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <mass value="3.0" />
-            <inertia ixx="0.05" ixy="0.0" ixz="0.0"
-                iyy="0.03" iyz="0.0"
-                izz="0.07" />
-        </inertial>
-        <visual>
-            <origin xyz="0 0 ${screen_box_height / 2}" rpy="0 0 0" />
-            <geometry>
-                <box size="0.4375 0.0625 ${screen_box_height}" />
-            </geometry>
-            <material name="screen_base_material">
-                <color rgba="0.7 0.7 0.7 1.0" />
-            </material>
-        </visual>
-        <collision>
-            <origin xyz="0 0 ${screen_box_height / 2}" rpy="0 0 0" />
-            <geometry>
-                <box size="0.4375 0.0625 ${screen_box_height}" />
-            </geometry>
-        </collision>
-    </link>
-
-    <!-- Panel de la pantalla -->
-    <link name="$(arg robot_name)_screen_panel_link">
-        <inertial>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <mass value="1.5" />
-            <inertia ixx="0.02" ixy="0.0" ixz="0.0"
-                iyy="0.02" iyz="0.0"
-                izz="0.01" />
-        </inertial>
-        <visual>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <geometry>
-                <box size="0.4125 0.025 0.3125" />
-            </geometry>
-            <material name="screen_panel_material">
-                <color rgba="0.05 0.05 0.05 1.0" />
-            </material>
-        </visual>
-        <collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <geometry>
-                <box size="0.4125 0.025 0.3125" />
-            </geometry>
-        </collision>
-    </link>
-
-    <joint name="$(arg robot_name)_base_screen_joint" type="fixed">
-        <parent link="$(arg robot_name)_base_link" />
-        <child link="$(arg robot_name)_screen_link" />
-        <origin xyz="${screen_offset_x} ${screen_offset_y} ${base_height / 2}" rpy="0 0 1.5708" />
-    </joint>
-
-    <joint name="$(arg robot_name)_screen_panel_joint" type="fixed">
-        <parent link="$(arg robot_name)_screen_link" />
-        <child link="$(arg robot_name)_screen_panel_link" />
-        <origin xyz="0 0.075 ${screen_box_height + screen_panel_z * 0.5}" rpy="0.35 0 0" />
-    </joint>
 
     <joint name="$(arg robot_name)_base_robot_joint" type="fixed">
         <parent link="$(arg robot_name)_base_link" />
         <child link="$(arg robot_name)_link_0" />
-        <origin xyz="${robot_offset_x} ${robot_offset_y} ${base_height / 2}" rpy="0 0 0" />
+        <origin xyz="${robot_offset_x} ${robot_offset_y} 0.323" rpy="0 0 0" />
     </joint>
 
-    <!-- ================================================================
-         macros instancias
-    ================================================================ -->
+    <!-- macros instancias-->
     <xacro:lbr_gazebo robot_name="$(arg robot_name)" />
 
     <xacro:lbr_system_interface
@@ -462,14 +356,14 @@
         robot_name="$(arg robot_name)"
         joint_limits_path="$(arg joint_limits_path)" />
 
-    <!-- Sensor FT45 montado en link_7 -->
+    <!-- sensor FT45 montado en link_7 -->
     <xacro:ft45_sensor
         parent="$(arg robot_name)_link_7"
         prefix="ft45"
         xyz="0 0 0.035"
         rpy="0 0 0" />
 
-    <!-- Herramienta de pulido montada en el punto de medida del FT45 -->
+    <!-- herramienta de pulido montada en el punto de medida del FT45 -->
     <xacro:polishing_tool
         parent="ft45_measuring_point"
         prefix="tool"
