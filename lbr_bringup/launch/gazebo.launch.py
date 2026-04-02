@@ -90,7 +90,13 @@ def generate_launch_description() -> LaunchDescription:
             Node(
                 package="ros_gz_bridge",
                 executable="parameter_bridge",
-                arguments=["/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock"],
+                arguments=[
+                    "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
+                    "/ft45/ft45_ft_sensor@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
+                ],
+                remappings=[
+                    ("/ft45/ft45_ft_sensor", "/ft45/wrench"),
+                ],
                 output="screen",
             ),
             Node(

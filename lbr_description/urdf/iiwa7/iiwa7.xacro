@@ -82,14 +82,13 @@
         </joint>
 
         <!-- plugin gazebo que sigue dando errores, error de SDF de frames invalidos -->
-        <gazebo reference="${prefix}_link">
-            <!--<sensor
-            name="${prefix}_ft_sensor" type="force_torque">
+        <gazebo reference="${prefix}_joint">
+            <sensor name="${prefix}_ft_sensor" type="force_torque">
                 <always_on>true</always_on>
                 <update_rate>${update_rate}</update_rate>
                 <visualize>false</visualize>
                 <force_torque>
-                    <frame>${prefix}_measuring_point</frame>
+                    <frame>child</frame>
                     <measure_direction>child_to_parent</measure_direction>
                     <force>
                         <x>
@@ -132,17 +131,10 @@
                         </z>
                     </torque>
                 </force_torque>
-                <plugin name="${prefix}_plugin" filename="libgazebo_ros_ft_sensor.so">
-                    <ros>
-                        <namespace></namespace>
-                        <remapping>wrench:=/${prefix}/wrench</remapping>
-                    </ros>
-                    <body_name>${prefix}_link</body_name>
-                    <joint_name>${prefix}_joint</joint_name>
-                    <frame_name>${prefix}_measuring_point</frame_name>
-                    <update_rate>${update_rate}</update_rate>
+                <plugin filename="gz-sim-forcetorque-system"
+                    name="gz::sim::systems::ForceTorque">
                 </plugin>
-            </sensor>-->
+            </sensor>
         </gazebo>
 
         <gazebo reference="${prefix}_link">
