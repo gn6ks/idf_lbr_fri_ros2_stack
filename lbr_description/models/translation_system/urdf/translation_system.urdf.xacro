@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="translation_system" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:arg name="gazebo" default="false"/>
+  <xacro:arg name="tf_prefix" default=""/>
+  
+  <xacro:if value="$(arg gazebo)"> 
+  	<xacro:include filename="$(find kuka_control)/models/$(arg tf_prefix)/urdf/$(arg tf_prefix).gazebo.xacro"/>
+  </xacro:if>
+
+  <!-- Cell Base URDF -->
+  <xacro:include filename="$(find kuka_control)/models/$(arg tf_prefix)/urdf/$(arg tf_prefix).xacro"/>
+  <xacro:translation_system prefix="$(arg tf_prefix)"/>
+
+</robot>

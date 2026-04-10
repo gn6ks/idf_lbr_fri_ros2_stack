@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="vigas" params="prefix">
+	  <!-- World frame (for Gazebo) -->
+	  <link name="world"/>
+
+	  <!-- Cell fixed to world frame  -->
+	  <joint name="base_joint" type="fixed">
+	      <origin xyz="0 0 0" rpy="0 0 0" />
+	      <parent link="world" />
+	      <child link="${prefix}_base"/>
+	  </joint>
+
+	  <link name="${prefix}_base">
+	      <inertial>
+		  <mass value="1793.4742" />
+		  <origin xyz="1.9066 -1.5542 2.115" rpy="0 0 0" />
+		  <inertia ixx="0.0002" ixy="0" ixz="0" iyy="0.0001" iyz="-0.0001" izz="0.0001" />
+	      </inertial>
+	      <visual name="visual">
+		<geometry>
+		  <mesh filename="package://kuka_control/models/${prefix}/meshes/Visual/OT-2575 Instalacion_IDF_Vigas.dae"/>
+		</geometry>
+	      </visual>
+	      <collision name="collision">
+		<geometry>
+		  <mesh filename="package://kuka_control/models/${prefix}/meshes/Collision/OT-2575 Instalacion_IDF_Vigas.stl"/>
+		</geometry>
+	      </collision>
+	  </link>
+	  
+	  <gazebo>
+	    <static>true</static>
+	  </gazebo>
+  </xacro:macro>
+
+</robot>

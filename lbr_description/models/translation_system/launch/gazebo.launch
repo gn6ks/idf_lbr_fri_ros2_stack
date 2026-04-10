@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="name" default=""/>
+  <arg name="ns" default=""/>
+  <arg name="x0" default="0"/>
+  <arg name="y0" default="0"/>
+  <arg name="z0" default="0"/>
+  <arg name="R0" default="0"/>
+  <arg name="P0" default="0"/>
+  <arg name="Y0" default="0"/>
+  <arg name="gazebo" default="true" />
+  <arg name="paused" default="false"/>
+  <arg name="gazebo_gui" default="true"/>
+
+  <!-- send robot urdf to param server -->
+  <param name="robot_description" command="$(find xacro)/xacro '$(find kuka_control)/models/$(arg name)/urdf/$(arg ns).urdf.xacro' gazebo:=$(arg gazebo) name:=$(arg name) tf_prefix:=$(arg ns)"/>
+
+  <!-- unpause only after loading robot model -->
+  <arg name="unpause" value="$(eval '' if arg('paused') else '-unpause')" />
+  <!-- push robot_description to factory and spawn robot in gazebo at the origin, change x,y,z arguments to spawn in a different position -->
+  <arg name="world_pose" value="-x $(arg x0) -y $(arg y0) -z $(arg z0) -R $(arg Y0) -P $(arg P0) -Y $(arg R0)"/>
+  <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model $(arg ns) $(arg unpause) $(arg world_pose)"
+    respawn="false" output="screen" />
+
+  <!-- Load joint controller parameters for Gazebo -->
+  <rosparam file="$(find kuka_control)/config/gazebo_controllers.yaml" command="load"/>
+  <!-- Spawn Gazebo ROS controllers -->
+  <node name="gazebo_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_controller"/>
+  <!-- Load ROS controllers -->
+  <include file="$(find kuka_control)/models/$(arg ns)/launch/ros_controllers.launch"/>
+
+</launch>

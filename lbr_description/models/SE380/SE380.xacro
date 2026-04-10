@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="SE380" params="prefix">
+	  <!-- World frame (for Gazebo) -->
+	  <link name="world"/>
+
+	  <!-- Cell fixed to world frame  -->
+	  <joint name="base_joint" type="fixed">
+	      <origin xyz="0 0 0" rpy="0 0 0" />
+	      <parent link="world" />
+	      <child link="${prefix}_base"/>
+	  </joint>
+
+	  <link name="${prefix}_base">
+	      <inertial>
+		  <mass value="500" />
+		  <origin xyz="-1.3985 0 0.4905" rpy="0 0 0" />
+		  <inertia ixx="153.4844" ixy="0.0015" ixz="22.6514" iyy="492.0243" iyz="-0.0006" izz="555.8124" />
+	      </inertial>
+	      <visual name="visual">
+		<geometry>
+		  <mesh filename="package://kuka_control/models/${prefix}/meshes/Visual/OT-2575 Instalacion_IDF_SE380.dae"/>
+		</geometry>
+	      </visual>
+	      <collision name="collision">
+		<geometry>
+		  <mesh filename="package://kuka_control/models/${prefix}/meshes/Visual/OT-2575 Instalacion_IDF_SE380.stl" />
+		</geometry>
+	      </collision>
+	  </link>
+	  
+	  <gazebo>
+	    <static>true</static>
+	  </gazebo>
+  </xacro:macro>
+
+</robot>

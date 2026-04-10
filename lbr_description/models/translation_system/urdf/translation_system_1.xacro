@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  
+  <xacro:property name="damping" value="0.0"/>
+  <xacro:property name="friction" value="0.0"/>
+
+  <xacro:macro name="translation_system" params="prefix">
+
+	  <link name="${prefix}_skid">
+	      <visual name="visual">
+			<geometry>
+			<mesh filename="package://kuka_control/models/${prefix}/meshes/Visual/OT-2575 Instalacion_IDF_Skid.dae"/>
+			</geometry>
+	      </visual>
+	      <!-- <collision name="collision">
+			<origin xyz="0 0 -0.012659" rpy="0 0 0" />
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+			<mesh filename="package://kuka_control/models/${prefix}/meshes/Collision/OT-2575 Instalacion_IDF_Skid.stl"/>
+			</geometry>
+	      </collision> -->
+	  </link>
+	  
+	  <joint name="car_placement" type="fixed">
+	      <origin xyz="-1.182176265665485 -0.011514175928570383 0.0441359560079082" rpy="0 0 0" />
+	      <parent link="${prefix}_skid" />
+	      <child link="${prefix}_SE380"/>
+	  </joint>
+
+	  <link name="${prefix}_SE380">
+	      <inertial>
+			<!-- <mass value="500" />
+			<origin xyz="-1.3985 0 0.4905" rpy="0 0 0" />
+			<inertia ixx="153.4844" ixy="0.0015" ixz="22.6514" iyy="492.0243" iyz="-0.0006" izz="555.8124" /> -->
+			<mass value="1" />
+			<origin xyz="-0 0 0" rpy="0 0 0" />
+			<inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+	      </inertial>
+	      <visual name="visual">
+			<geometry>
+			<!-- <mesh filename="package://kuka_control/models/${prefix}/meshes/Visual/OT-2575 Instalacion_IDF_SE380_old.dae"/> -->
+			<mesh filename="package://kuka_control/models/${prefix}/meshes/Visual/OT-2575 Instalacion_IDF_SE380.dae"/>
+			</geometry>
+	      </visual>
+	      <!-- <collision name="collision">
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+			<mesh filename="package://kuka_control/models/${prefix}/meshes/Collision/OT-2575 Instalacion_IDF_SE380.stl"/>
+			</geometry>
+	      </collision> -->
+	  </link>
+  </xacro:macro>
+
+</robot>

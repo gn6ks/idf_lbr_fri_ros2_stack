@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<robot name="translation_system_gazebo" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <gazebo reference="translation_system_skid">
+    <gravity>0</gravity>
+  </gazebo>
+  <gazebo reference="translation_system_SE380">
+    <gravity>0</gravity>
+  </gazebo>
+  
+  <gazebo>
+    <plugin name="libgazebo_ros_p3d" filename="libgazebo_ros_p3d.so">
+	<RobotNamespace>translation_system</RobotNamespace>
+	<topicName>gazebo_odom</topicName>
+	<frameName>/world</frameName>
+	<bodyName>translation_system_skid</bodyName>
+	<updateRate>100.0</updateRate>
+	<gaussianNoise>0.01</gaussianNoise>
+    </plugin>
+  </gazebo>
+
+</robot>

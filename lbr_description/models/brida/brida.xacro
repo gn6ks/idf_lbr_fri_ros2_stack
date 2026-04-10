@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="brida" params="name parent *origin">
+    
+      <joint name="${name}_base_joint" type="fixed">
+        <xacro:insert_block name="origin" />
+        <parent link="${parent}"/>
+        <child link="${name}_base"/>
+      </joint>
+      
+      <link name="${name}_base">
+        <inertial>
+          <mass value="0.8" />
+          <origin xyz="-0.015887 0 0.036837" rpy="0 0 0" />
+          <inertia ixx="0.001143" ixy="-0.0" ixz="-0.000433" iyy="0.002044" iyz="-0.0" izz="0.001124" />
+        </inertial>
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+            <mesh filename="package://lbr_description/models/brida/meshes/visual/brida.dae"/>
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://lbr_description/models/brida/meshes/collision/brida.stl"/>
+          </geometry>
+        </collision>
+      </link>
+
+    </xacro:macro>
+    
+  </robot>

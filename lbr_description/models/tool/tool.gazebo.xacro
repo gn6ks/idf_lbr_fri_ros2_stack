@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+	<xacro:macro name="tool" params="name">
+
+	<gazebo reference="${name}_base">
+          <provideFeedback>true</provideFeedback>
+          <kp>7000</kp>
+          <kd>50</kd>
+          <mu1>0.02</mu1>
+          <mu2>0.02</mu2>
+	</gazebo>
+
+	</xacro:macro>
+
+</robot>

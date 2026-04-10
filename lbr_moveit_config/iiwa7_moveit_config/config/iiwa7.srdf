@@ -79,10 +79,40 @@ are defined
     <!-- estos son las colisiones de polla de tanto el sensor como la mierda la mesa en la que
     esta-->
     <!-- si no te va lo cambias mamon, deberia de ir bien-->
-    <disable_collisions link1="ft45_link" link2="lbr_link_7" reason="Adjacent" />
+    <!--    <disable_collisions link1="ft45_link" link2="lbr_link_7" reason="Adjacent" />
     <disable_collisions link1="ft45_link" link2="tool_adapter_link" reason="Adjacent" />
     <disable_collisions link1="lbr_base_link" link2="lbr_link_0" reason="Adjacent" />0" rp
     <disable_collisions link1="lbr_link_7" link2="tool_adapter_link" reason="Adjacent" />
     <disable_collisions link1="tool_backing_pad_link" link2="tool_foam_pad_link" reason="Adjacent" />
-    <disable_collisions link1="tool_adapter_link" link2="tool_backing_pad_link" reason="Adjacent"/>
+    <disable_collisions link1="tool_adapter_link" link2="tool_backing_pad_link" reason="Adjacent"/>-->
+
+    <!-- carrito vs robot -->
+    <disable_collisions link1="lbr_base_link" link2="lbr_link_0" reason="Adjacent" />
+    <disable_collisions link1="lbr_base_link" link2="lbr_link_1" reason="Never" />
+    <disable_collisions link1="lbr_base_link" link2="lbr_link_2" reason="Never" />
+
+    <!-- cadena herramienta: adyacentes entre si -->
+    <disable_collisions link1="lbr_link_7" link2="brida_cam_base" reason="Adjacent" />
+    <disable_collisions link1="brida_cam_base" link2="ft45_base" reason="Adjacent" />
+    <disable_collisions link1="ft45_base" link2="brida_ft_base" reason="Adjacent" />
+    <disable_collisions link1="brida_ft_base" link2="tool_body_base" reason="Adjacent" />
+    <disable_collisions link1="tool_body_base" link2="tool_base" reason="Adjacent" />
+
+    <!-- herramienta vs links del brazo que nunca colisionan -->
+    <disable_collisions link1="brida_cam_base" link2="lbr_link_6" reason="Never" />
+    <disable_collisions link1="brida_cam_base" link2="lbr_link_7" reason="Never" />
+    <disable_collisions link1="ft45_base" link2="lbr_link_6" reason="Never" />
+    <disable_collisions link1="ft45_base" link2="lbr_link_7" reason="Never" />
+    <disable_collisions link1="brida_ft_base" link2="lbr_link_7" reason="Never" />
+    <disable_collisions link1="tool_body_base" link2="lbr_link_7" reason="Never" />
+    <disable_collisions link1="tool_base" link2="lbr_link_7" reason="Never" />
+
+    <!-- mamadongas que van mal con el carro???? -->
+    <disable_collisions link1="ft45_base" link2="lbr_base_link" reason="Never" />
+    <disable_collisions link1="ft45_base" link2="tool_body_base" reason="Never" />
+    <disable_collisions link1="brida_cam_base" link2="lbr_base_link" reason="Never" />
+    <disable_collisions link1="brida_ft_base" link2="lbr_base_link" reason="Never" />
+    <disable_collisions link1="tool_body_base" link2="lbr_base_link" reason="Never" />
+    <disable_collisions link1="tool_base" link2="lbr_base_link" reason="Never" />
+
 </robot>

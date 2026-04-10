@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<robot name="translation_system_gazebo" xmlns:xacro="http://ros.org/wiki/xacro">
+	<!-- GAZEBO -->
+  
+	<!-- World frame (for Gazebo) -->
+	<link name="world"/>
+
+	<!-- Arm fixed to world frame  -->
+	<joint name="virtual_joint" type="fixed">
+	  <origin xyz="0 0 0" rpy="0 0 0"/>
+	  <parent link="world"/>
+	  <child link="translation_system_rails"/>
+	</joint>
+
+	<!-- Gazebo plugin for ROS Control -->
+	<gazebo>
+	  <plugin name="skid_ros_control" filename="libgazebo_ros_control.so">
+	    <robotNamespace>/translation_system</robotNamespace>
+	    <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+	    <controlPeriod>0.001</controlPeriod> <!-- Gazebo Default -->
+	  </plugin>
+	</gazebo>
+
+	<!-- Joint damping -->
+	<gazebo reference="skid_movement">
+	  <implicitSpringDamper>1</implicitSpringDamper>
+	</gazebo>
+
+	<!--Transmission and actuators-->
+
+	<transmission name="skid_movement_trans" type="SimpleTransmission">
+	  <type>transmission_interface/SimpleTransmission</type>
+	  <actuator name="skid_movement_motor">
+	    <mechanicalReduction>1</mechanicalReduction>
+	  </actuator>
+	  <joint name="skid_movement">
+	    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+	  </joint>
+	</transmission>
+
+</robot>

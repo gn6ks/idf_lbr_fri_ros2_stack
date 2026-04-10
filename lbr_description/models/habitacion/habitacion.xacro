@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="habitacion" params="prefix">
+	  <!-- World frame (for Gazebo) -->
+	  <link name="world"/>
+
+	  <!-- Cell fixed to world frame  -->
+	  <joint name="base_joint" type="fixed">
+	      <origin xyz="0 0 0" rpy="0 0 0" />
+	      <parent link="world" />
+	      <child link="${prefix}_base"/>
+	  </joint>
+
+	  <link name="${prefix}_base">
+	      <inertial>
+		  <mass value="7290.02" />
+		  <origin xyz="0 0 0" rpy="0 0 0" />
+		  <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+	      </inertial>
+	      <visual name="visual">
+		<geometry>
+		  <mesh filename="package://kuka_control/models/${prefix}/meshes/Visual/OT-2575 Instalacion_IDF_Habitacion.dae"/>
+		</geometry>
+	      </visual>
+	  </link>
+	  
+	  <gazebo>
+	    <static>true</static>
+	  </gazebo>
+  </xacro:macro>
+
+</robot>

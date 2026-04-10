@@ -1,0 +1,85 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  
+  <xacro:property name="damping" value="0.0"/>
+  <xacro:property name="friction" value="0.0"/>
+
+  <xacro:macro name="rails" params="prefix">
+	  <!-- World frame (for Gazebo) -->
+	  <link name="world"/>
+
+	  <!-- Cell fixed to world frame  -->
+	  <joint name="rails_joint" type="fixed">
+	      <origin xyz="0 0 0" rpy="0 0 0" />
+	      <parent link="world" />
+	      <child link="${prefix}_rails"/>
+	  </joint>
+
+	  <link name="${prefix}_rails">
+	      <inertial>
+		  <mass value="540.325" />
+		  <origin xyz="0.346443 0.000233644 0.180261" rpy="0 0 0" />
+		  <inertia ixx="38.1654" ixy="0.0137" ixz="-1.1355" iyy="4670.4276" iyz="0.0176" izz="4700.7024" />
+	      </inertial>
+	      <visual name="visual">
+		<geometry>
+		  <mesh filename="package://kuka_control/models/${prefix}/meshes/Visual/OT-2575 Instalacion_IDF_Rails-Motor.dae"/>
+		</geometry>
+	      </visual>
+	      <!-- <collision name="collision">
+		<origin xyz="0 0 0" rpy="0 0 0" />
+		<geometry>
+		  <mesh filename="package://kuka_control/models/${prefix}/meshes/Collision/OT-2575 Instalacion_IDF_Rails-motor.stl"/>
+		</geometry>
+	      </collision> -->
+	  </link>
+	  
+	  <!--
+	  <joint name="skid_movement" type="prismatic">
+	      <origin rpy="0 0 0" xyz="0.19 0 0.2"/>
+	      <parent link="${prefix}_rails"/>
+	      <child link="${prefix}_skid"/>
+      	      <axis xyz="1 0 0"/>
+	      <limit effort="1000.0" lower="0" upper="2.4161" velocity="0.5"/>
+      	      <dynamics damping="${damping}" friction="${friction}"/>
+   	  </joint>
+
+	  <link name="${prefix}_skid">
+	      <inertial>
+		  <mass value="174.616" />
+		  <origin xyz="0.0016 0.0009 -0.2162" rpy="0 0 0" />
+		  <inertia ixx="23.1841" ixy="-0.001" ixz="-0.0005" iyy="397.0265" iyz="0.0065" izz="414.8514" />
+	      </inertial>
+	      <visual name="visual">
+		<geometry>
+		  <mesh filename="package://kuka_control/models/${prefix}/meshes/Visual/OT-2575 Instalacion_IDF_Skid.dae"/>
+		</geometry>
+	      </visual>
+	  </link>
+	  
+	  <joint name="car_placement" type="fixed">
+	      <origin xyz="0 0 0" rpy="0 0 0" />
+	      <parent link="world" />
+	      <child link="${prefix}_base"/>
+	  </joint>
+
+	  <link name="${prefix}_SE380">
+	      <inertial>
+		  <mass value="500" />
+		  <origin xyz="-1.3985 0 0.4905" rpy="0 0 0" />
+		  <inertia ixx="153.4844" ixy="0.0015" ixz="22.6514" iyy="492.0243" iyz="-0.0006" izz="555.8124" />
+	      </inertial>
+	      <visual name="visual">
+		<geometry>
+		  <mesh filename="package://kuka_control/models/${prefix}/meshes/Visual/OT-2575 Instalacion_IDF_SE380.dae"/>
+		</geometry>
+	      </visual>
+	  </link>
+	  -->
+	  
+	  <gazebo>
+	    <static>true</static>
+	  </gazebo>
+  </xacro:macro>
+
+</robot>

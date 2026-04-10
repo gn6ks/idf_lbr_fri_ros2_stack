@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+	<xacro:macro name="ft_sensor_gazebo" params="parent name">
+
+	<gazebo reference="${name}_base">
+          <provideFeedback>true</provideFeedback>
+	</gazebo>
+
+	<gazebo reference="${name}_adapter">
+          <provideFeedback>true</provideFeedback>
+	</gazebo>
+	
+	<gazebo reference="${name}_base_adapter_joint">
+	  <provideFeedback>true</provideFeedback>
+	</gazebo>
+
+	<transmission name="tran7">
+	  <type>transmission_interface/SimpleTransmission</type>
+	  <joint name="${name}_base_adapter_joint">
+	    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+	  </joint>
+	  <actuator name="motor7">
+	    <mechanicalReduction>1</mechanicalReduction>
+	  </actuator>
+	</transmission>
+
+	<gazebo>
+	  <plugin name="${name}_ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+	    <updateRate>1000.0</updateRate>
+	      <topicName>${name}/ft_sensor_topic</topicName> 
+	      <jointName>${name}_base_adapter_joint</jointName>
+	      <noise>
+	        <type>gaussian</type>
+	        <mean>0.0</mean>
+	        <stddev>0.003</stddev>  
+	      </noise>
+	  </plugin>
+	</gazebo>
+
+	</xacro:macro>
+
+</robot>

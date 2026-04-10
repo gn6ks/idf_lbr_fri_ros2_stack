@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="vigas" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:arg name="gazebo" default="false"/>
+  <xacro:arg name="tf_prefix" default=""/>
+
+  <!-- Cell Base URDF -->
+  <xacro:include filename="$(find kuka_control)/models/$(arg tf_prefix)/$(arg tf_prefix).xacro"/>
+  <xacro:vigas prefix="$(arg tf_prefix)"/>
+
+</robot>
