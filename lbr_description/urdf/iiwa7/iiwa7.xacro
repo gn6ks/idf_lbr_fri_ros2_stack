@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <robot name="iiwa7" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+    <!-- caja, pasar a primitiva para la colision? ahorra computo creo-->
     <xacro:property name="base_mass" value="40.0" />
     <xacro:property name="robot_offset_x" value="0.40" />
     <xacro:property name="robot_offset_y" value="0.0" />
@@ -138,9 +139,9 @@
     <!-- TCP alternativo fijo desde link_7 para IK -->
     <link name="tool_tip_dummy" />
     <joint name="$(arg robot_name)_link_7-tool_tip_dummy" type="fixed">
-        <parent link="$(arg robot_name)_link_7" />
+        <parent link="tool_tip" />
         <child link="tool_tip_dummy" />
-        <origin xyz="0 0 0.1082" rpy="0 0 ${pi}" />
+        <origin xyz="0 0 0" rpy="0 0 ${pi}" />
     </joint>
 
 </robot>
