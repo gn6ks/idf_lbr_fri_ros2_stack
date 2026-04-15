@@ -43,7 +43,9 @@
 		</geometry>-->
 		<origin xyz="0 0 0" rpy="0 0 0"/>
 		<geometry>
-			<mesh filename="package://lbr_description/models/brida/meshes/collision/brida_cam.stl"/>
+		<!--- ahora usa un cilindro primitivo para optimizar los golpes y el calculo de colisiones -->
+		<!-- <mesh filename="package://lbr_description/models/brida/meshes/collision/brida_cam.stl"/> -->
+			<cylinder radius="0.031" length="0.01"/>
 		</geometry>
 	</collision>
     </link>
@@ -85,7 +87,9 @@
 		</geometry>-->
 		<origin xyz="0 0 0" rpy="0 0 0"/>
 		<geometry>
-			<mesh filename="package://lbr_description/models/ft_sensor/meshes/collision/FT45.stl"/>
+		<cylinder radius="0.0225" length="0.021"/>
+		<!--- la parte de arriba ya han llegado a usar formas primitivas para ahorrar CPU -->
+		<!--- 	<mesh filename="package://lbr_description/models/ft_sensor/meshes/collision/FT45.stl"/> -->
 		</geometry>
 	</collision>
     </link>
@@ -127,7 +131,8 @@
 		</geometry>-->
 		<origin xyz="0 0 0" rpy="0 0 0"/>
 		<geometry>
-			<mesh filename="package://lbr_description/models/brida/meshes/collision/brida_ft.stl"/>
+		    <cylinder radius="0.022" length="0.01"/>
+			<!-- <mesh filename="package://lbr_description/models/brida/meshes/collision/brida_ft.stl"/> -->
 		</geometry>
 	</collision>
     </link>
