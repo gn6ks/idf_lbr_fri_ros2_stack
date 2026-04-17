@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <robot name="iiwa7" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <!-- caja, pasar a primitiva para la colision? ahorra computo creo-->
@@ -9,23 +9,39 @@
     <xacro:property name="base_iyy" value="5.600" />
     <xacro:property name="base_izz" value="5.467" />
 
-    <xacro:include filename="$(find lbr_description)/urdf/iiwa7/iiwa7.urdf.xacro" />
+    <xacro:include
+        filename="$(find lbr_description)/urdf/iiwa7/iiwa7.urdf.xacro"
+    />
     <xacro:include filename="$(find lbr_description)/gazebo/lbr_gazebo.xacro" />
-    <xacro:include filename="$(find lbr_description)/ros2_control/lbr_system_interface.xacro" />
-    <xacro:include filename="$(find lbr_description)/models/ft_sensor/real_ft_sensor_macro.xacro" />
+    <xacro:include
+        filename="$(find lbr_description)/ros2_control/lbr_system_interface.xacro"
+    />
+    <xacro:include
+        filename="$(find lbr_description)/models/ft_sensor/real_ft_sensor_macro.xacro"
+    />
     <xacro:include filename="$(find lbr_description)/models/tool/tool.xacro" />
 
     <xacro:arg name="robot_name" default="lbr" />
     <xacro:arg name="mode" default="mock" />
-    <xacro:arg name="joint_limits_path"
-        default="$(find lbr_description)/urdf/iiwa7/joint_limits.yaml" />
-    <xacro:arg name="system_config_path"
-        default="$(find lbr_description)/ros2_control/lbr_system_config.yaml" />
-    <xacro:arg name="initial_joint_positions_path"
-        default="$(find lbr_description)/ros2_control/initial_joint_positions.yaml" />
+    <xacro:arg
+        name="joint_limits_path"
+        default="$(find lbr_description)/urdf/iiwa7/joint_limits.yaml"
+    />
+    <xacro:arg
+        name="system_config_path"
+        default="$(find lbr_description)/ros2_control/lbr_system_config.yaml"
+    />
+    <xacro:arg
+        name="initial_joint_positions_path"
+        default="$(find lbr_description)/ros2_control/initial_joint_positions.yaml"
+    />
 
-    <xacro:macro name="ft_gazebo_plugin" params="ft_joint_name topic_name update_rate:='1000' noise_stddev_force:='0.01' noise_stddev_torque:='0.001'">
+    <xacro:macro
+        name="ft_gazebo_plugin"
+        params="ft_joint_name topic_name update_rate:='1000' noise_stddev_force:='0.01' noise_stddev_torque:='0.001'"
+    >
         <gazebo reference="${ft_joint_name}">
+            <preserveFixedJoint>true</preserveFixedJoint>
             <sensor name="ft_sensor" type="force_torque">
                 <always_on>true</always_on>
                 <update_rate>${update_rate}</update_rate>
@@ -34,18 +50,27 @@
                     <frame>child</frame>
                     <measure_direction>child_to_parent</measure_direction>
                     <force>
-                        <x><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_force}</stddev></noise></x>
-                        <y><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_force}</stddev></noise></y>
-                        <z><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_force}</stddev></noise></z>
+                        <x><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_force}</stddev></noise></x>
+                        <y><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_force}</stddev></noise></y>
+                        <z><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_force}</stddev></noise></z>
                     </force>
                     <torque>
-                        <x><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_torque}</stddev></noise></x>
-                        <y><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_torque}</stddev></noise></y>
-                        <z><noise type="gaussian"><mean>0.0</mean><stddev>${noise_stddev_torque}</stddev></noise></z>
+                        <x><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_torque}</stddev></noise></x>
+                        <y><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_torque}</stddev></noise></y>
+                        <z><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_torque}</stddev></noise></z>
                     </torque>
                 </force_torque>
                 <topic>${topic_name}</topic>
-                <plugin filename="gz-sim-forcetorque-system" name="gz::sim::systems::ForceTorque" />
+                <plugin
+                    filename="gz-sim-forcetorque-system"
+                    name="gz::sim::systems::ForceTorque"
+                />
             </sensor>
         </gazebo>
     </xacro:macro>
@@ -62,14 +87,21 @@
         <inertial>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <mass value="${base_mass}" />
-            <inertia ixx="${base_ixx}" ixy="0.0" ixz="0.0"
-                     iyy="${base_iyy}" iyz="0.0"
-                     izz="${base_izz}" />
+            <inertia
+                ixx="${base_ixx}"
+                ixy="0.0"
+                ixz="0.0"
+                iyy="${base_iyy}"
+                iyz="0.0"
+                izz="${base_izz}"
+            />
         </inertial>
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://lbr_description/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.dae" />
+                <mesh
+                    filename="package://lbr_description/meshes/iiwa7/carrito_azul/Cuerpo_carro_1.dae"
+                />
             </geometry>
         </visual>
         <!-- caja simplificada para tratar de optimizar el codigo -->
@@ -93,49 +125,51 @@
         robot_name="$(arg robot_name)"
         mode="$(arg mode)"
         system_config_path="$(arg system_config_path)"
-        initial_joint_positions_path="$(arg initial_joint_positions_path)" />
+        initial_joint_positions_path="$(arg initial_joint_positions_path)"
+    />
 
     <xacro:iiwa7
         robot_name="$(arg robot_name)"
-        joint_limits_path="$(arg joint_limits_path)" />
+        joint_limits_path="$(arg joint_limits_path)"
+    />
 
     <!-- cadena: link_7 → brida_cam → ft45 → brida_ft → tool_body → sponge = TCP -->
 
-    <xacro:brida_cam
-        parent="$(arg robot_name)_link_7"
-        name="brida_cam">
+    <xacro:brida_cam parent="$(arg robot_name)_link_7" name="brida_cam">
         <origin xyz="0 0 0.035" rpy="0 0 0" />
     </xacro:brida_cam>
 
-    <xacro:ft45
-        parent="brida_cam_tip"
-        name="ft45">
+    <xacro:ft45 parent="brida_cam_tip" name="ft45">
         <origin xyz="0 0 0" rpy="0 0 ${pi}" />
     </xacro:ft45>
 
     <!-- plugin FT sobre joint: brida_cam_tip_ft45_base_joint -->
     <xacro:ft_gazebo_plugin
         ft_joint_name="brida_cam_tip_ft45_base_joint"
-        topic_name="ft_sensor/wrench" 
-        update_rate="200"/> <!-- bajado la frecuencia de actualizacion para optimizar, sin cambios -->
+        topic_name="ft_sensor/wrench"
+        update_rate="200"
+    /> <!-- bajado la frecuencia de actualizacion para optimizar, sin cambios -->
 
-    <xacro:brida_ft
-        parent="ft45_tip"
-        name="brida_ft">
+    <xacro:brida_ft parent="ft45_tip" name="brida_ft">
         <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:brida_ft>
 
-    <xacro:repair_tool_iiwa
-        name="tool_body"
-        parent="brida_ft_tip">
+    <xacro:repair_tool_iiwa name="tool_body" parent="brida_ft_tip">
         <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:repair_tool_iiwa>
 
-    <xacro:repair_sponge_red
-        name="tool"
-        parent="tool_body_tip">
+    <xacro:repair_sponge_red name="tool" parent="tool_body_tip">
         <origin xyz="0 0 0" rpy="0 0 ${pi}" />
     </xacro:repair_sponge_red>
+
+    <joint name="$(arg robot_name)_joint_ee" type="fixed">
+        <parent link="tool_tip" />
+        <child link="$(arg robot_name)_link_ee" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint>
+
+    <link name="$(arg robot_name)_link_ee">
+    </link>
 
     <!-- TCP alternativo fijo desde link_7 para IK -->
     <!-- no uso el dummy para que no haya una duplicidad de los puntos TCP, sin cambios, no funciona la optimizacion igualmente -->

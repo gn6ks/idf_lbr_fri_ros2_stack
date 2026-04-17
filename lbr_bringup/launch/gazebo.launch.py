@@ -7,7 +7,9 @@ from launch.substitutions import (
     PathSubstitution,
 )
 from launch_ros.actions import Node
-from launch_ros.parameter_descriptions import ParameterValue  # nuevo parametro description para forzar el tipo con str
+from launch_ros.parameter_descriptions import (
+    ParameterValue,  # nuevo parametro description para forzar el tipo con str
+)
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -55,7 +57,9 @@ def generate_launch_description() -> LaunchDescription:
                                 [
                                     FindExecutable(name="xacro"),
                                     " ",
-                                    PathSubstitution(FindPackageShare("lbr_description"))
+                                    PathSubstitution(
+                                        FindPackageShare("lbr_description")
+                                    )
                                     / "urdf"
                                     / LaunchConfiguration("model")
                                     / LaunchConfiguration("model"),
@@ -92,10 +96,7 @@ def generate_launch_description() -> LaunchDescription:
                 executable="parameter_bridge",
                 arguments=[
                     "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
-                    "/ft45/ft45_ft_sensor@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
-                ],
-                remappings=[
-                    ("/ft45/ft45_ft_sensor", "/ft45/wrench"),
+                    "/ft_sensor/wrench@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
                 ],
                 output="screen",
             ),
@@ -108,12 +109,18 @@ def generate_launch_description() -> LaunchDescription:
                     "-name",
                     LaunchConfiguration("robot_name"),
                     "-allow_renaming",
-                    "-x", "0.0",
-                    "-y", "0.0",
-                    "-z", "0.0",
-                    "-R", "0.0",
-                    "-P", "0.0",
-                    "-Y", "0.0",
+                    "-x",
+                    "0.0",
+                    "-y",
+                    "0.0",
+                    "-z",
+                    "0.0",
+                    "-R",
+                    "0.0",
+                    "-P",
+                    "0.0",
+                    "-Y",
+                    "0.0",
                 ],
                 output="screen",
                 namespace=LaunchConfiguration("robot_name"),
