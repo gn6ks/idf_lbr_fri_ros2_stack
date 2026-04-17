@@ -106,9 +106,16 @@
         </visual>
         <!-- caja simplificada para tratar de optimizar el codigo -->
         <collision>
-            <origin xyz="0.0 0.0 -0.1685" rpy="0 0 0" />
+            <origin xyz="0 0 -0.33" rpy="0 0 0" />
             <geometry>
-                <box size="1.055 0.705 0.983" />
+                <box size="1.055 0.705 0.660" />
+            </geometry>
+        </collision>
+        <!-- colisión extra para la pantalla (rectángulo) -->
+        <collision>
+            <origin xyz="-0.2195 0 0.1615" rpy="0 0 0" />
+            <geometry>
+                <box size="0.389 0.705 0.323" />
             </geometry>
         </collision>
     </link>

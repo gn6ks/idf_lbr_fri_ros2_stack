@@ -108,12 +108,12 @@ are defined
     <disable_collisions link1="tool_base" link2="lbr_link_7" reason="Never" />
 
     <!-- mamadongas que van mal con el carro???? -->
-    <disable_collisions link1="ft45_base" link2="lbr_base_link" reason="Never" />
-    <disable_collisions link1="ft45_base" link2="tool_body_base" reason="Never" />
+    <!-- <disable_collisions link1="ft45_base" link2="lbr_base_link" reason="Never" />
     <disable_collisions link1="brida_cam_base" link2="lbr_base_link" reason="Never" />
     <disable_collisions link1="brida_ft_base" link2="lbr_base_link" reason="Never" />
     <disable_collisions link1="tool_body_base" link2="lbr_base_link" reason="Never" />
-    <disable_collisions link1="tool_base" link2="lbr_base_link" reason="Never" />
+    <disable_collisions link1="tool_base" link2="lbr_base_link" reason="Never" /> -->
+    <disable_collisions link1="ft45_base" link2="tool_body_base" reason="Never" />
     
     <!-- evitar choques internos en el efector final dado que ahora hay cilindros de optimizacion de render de cpu -->
     <disable_collisions link1="brida_cam_base" link2="tool_body_base" reason="Never" />
