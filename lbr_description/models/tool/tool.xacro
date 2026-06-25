@@ -109,11 +109,11 @@
           </geometry>
         </visual>
         <collision>
-          <origin xyz="0 0 0" rpy="0 0 -0.01" />
+          <origin xyz="0 0 0" rpy="0 0 0" />
           <geometry>
           <!--- forma primitiva para optimizar CPU, calculos propios -->
           <!-- TODO: revisar las dimensiones del cilindro para que se ajusten a la realidad -->
-            <cylinder radius="0.04" length="0.02" />
+            <cylinder radius="0.04" length="0.04" />
             <!-- <mesh filename="package://lbr_description/models/tool/meshes/collision/tool_base.stl"/> -->
           </geometry>
         </collision>
@@ -150,11 +150,11 @@
           </geometry>
         </visual>
         <collision>
-          <origin xyz="0 0 0" rpy="0 0 0" />
+          <origin xyz="0 0 0" rpy="0 0 0.01" />
           <geometry>
           <!--- forma primitiva para optimizar CPU, calculos propios -->
           <!-- TODO: revisar las dimensiones del cilindro para que se ajusten a la realidad -->
-            <cylinder radius="0.04" length="0.04" />
+            <cylinder radius="0.04" length="0.02" />
             <!-- <mesh filename="package://lbr_description/models/tool/meshes/collision/tool_sponge_red.stl"/> -->
           </geometry>
         </collision>
