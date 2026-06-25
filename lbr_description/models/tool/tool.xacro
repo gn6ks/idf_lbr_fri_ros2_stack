@@ -109,7 +109,7 @@
           </geometry>
         </visual>
         <collision>
-          <origin xyz="0 0 0" rpy="0 0 -0.02" />
+          <origin xyz="0 0 0" rpy="0 0 -0.04" />
           <geometry>
           <!--- forma primitiva para optimizar CPU, calculos propios -->
           <!-- TODO: revisar las dimensiones del cilindro para que se ajusten a la realidad -->
@@ -150,7 +150,7 @@
           </geometry>
         </visual>
         <collision>
-          <origin xyz="0 0 0" rpy="0 0 -0.01" />
+          <origin xyz="0 0 0" rpy="0 0 -0.02" />
           <geometry>
           <!--- forma primitiva para optimizar CPU, calculos propios -->
           <!-- TODO: revisar las dimensiones del cilindro para que se ajusten a la realidad -->
