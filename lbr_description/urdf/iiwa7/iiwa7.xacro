@@ -80,7 +80,7 @@
     <joint name="$(arg robot_name)_world_base_joint" type="fixed">
         <parent link="world" />
         <child link="$(arg robot_name)_base_link" />
-        <origin xyz="0 0 0.660" rpy="0 0 0" />
+        <origin xyz="0 0 0.660" rpy="0 0 ${pi/2}" />
     </joint>
 
     <link name="$(arg robot_name)_base_link">
