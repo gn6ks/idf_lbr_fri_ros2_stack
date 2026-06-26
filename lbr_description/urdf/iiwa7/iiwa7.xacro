@@ -169,6 +169,14 @@
         <origin xyz="0 0 0" rpy="0 0 ${pi}" />
     </xacro:repair_sponge_red>
 
+    <gazebo reference="tool_base">
+        <self_collide>true</self_collide>
+    </gazebo>
+
+    <gazebo reference="$(arg robot_name)_base_link">
+        <self_collide>true</self_collide>
+    </gazebo>
+
     <joint name="$(arg robot_name)_joint_ee" type="fixed">
         <parent link="tool_tip" />
         <child link="$(arg robot_name)_link_ee" />
