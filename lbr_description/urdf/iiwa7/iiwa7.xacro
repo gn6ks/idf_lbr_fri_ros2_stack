@@ -170,11 +170,11 @@
     </xacro:repair_sponge_red>
 
     <gazebo reference="tool_base">
-        <self_collide>true</self_collide>
+        <selfCollide>true</selfCollide>
     </gazebo>
 
     <gazebo reference="$(arg robot_name)_base_link">
-        <self_collide>true</self_collide>
+        <selfCollide>true</selfCollide>
     </gazebo>
 
     <joint name="$(arg robot_name)_joint_ee" type="fixed">
