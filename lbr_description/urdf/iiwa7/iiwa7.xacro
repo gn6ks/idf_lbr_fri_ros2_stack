@@ -20,7 +20,6 @@
         filename="$(find lbr_description)/models/ft_sensor/real_ft_sensor_macro.xacro"
     />
     <xacro:include filename="$(find lbr_description)/models/tool/tool.xacro" />
-    <xacro:include filename="$(find lbr_description)/models/tool/tool.gazebo.xacro" />
 
     <xacro:arg name="robot_name" default="lbr" />
     <xacro:arg name="mode" default="mock" />
@@ -174,14 +173,8 @@
         <selfCollide>true</selfCollide>
     </gazebo>
 
-    <xacro:tool name="tool" />
-
     <gazebo reference="$(arg robot_name)_base_link">
         <selfCollide>true</selfCollide>
-        <kp>7000</kp>
-        <kd>50</kd>
-        <mu1>0.2</mu1>
-        <mu2>0.2</mu2>
     </gazebo>
 
     <joint name="$(arg robot_name)_joint_ee" type="fixed">
