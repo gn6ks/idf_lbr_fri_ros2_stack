@@ -128,11 +128,6 @@
 
     <xacro:lbr_gazebo robot_name="$(arg robot_name)" />
 
-    <!-- Habilitar self-collision a nivel de modelo para Gazebo -->
-    <gazebo>
-        <selfCollide>true</selfCollide>
-    </gazebo>
-
     <xacro:lbr_system_interface
         robot_name="$(arg robot_name)"
         mode="$(arg mode)"
@@ -173,14 +168,6 @@
     <xacro:repair_sponge_red name="tool" parent="tool_body_tip">
         <origin xyz="0 0 0" rpy="0 0 ${pi}" />
     </xacro:repair_sponge_red>
-
-    <gazebo reference="tool_base">
-        <selfCollide>true</selfCollide>
-    </gazebo>
-
-    <gazebo reference="$(arg robot_name)_base_link">
-        <selfCollide>true</selfCollide>
-    </gazebo>
 
     <joint name="$(arg robot_name)_joint_ee" type="fixed">
         <parent link="tool_tip" />
