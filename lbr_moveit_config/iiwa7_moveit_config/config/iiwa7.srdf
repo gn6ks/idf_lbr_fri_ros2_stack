@@ -120,5 +120,9 @@ are defined
     <disable_collisions link1="ft45_base" link2="tool_base" reason="Never" />
     <disable_collisions link1="brida_ft_base" link2="tool_base" reason="Never" />
 
+    <!-- Permitir contacto esponja ↔ caja-pantalla del carro (test de histéresis) -->
+    <disable_collisions link1="tool" link2="lbr_base_link" reason="Hysteresis test contact" />
+    <disable_collisions link1="tool_body" link2="lbr_base_link" reason="Hysteresis test contact" />
+    <disable_collisions link1="brida_ft" link2="lbr_base_link" reason="Hysteresis test contact" />
 
 </robot>
