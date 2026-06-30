@@ -89,7 +89,9 @@ def generate_launch_description() -> LaunchDescription:
                 )
                 / "launch"
                 / "gz_sim.launch.py",
-                launch_arguments={"gz_args": "-r empty.sdf"}.items(),
+                launch_arguments={
+                    "gz_args": "-r empty.sdf --physics-engine bullet"
+                }.items(),
             ),
             Node(
                 package="ros_gz_bridge",
