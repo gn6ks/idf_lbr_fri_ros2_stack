@@ -48,9 +48,7 @@ def _embed_robot_in_world(context, *args, **kwargs):
             LaunchConfiguration("robot_name"),
             " mode:=gazebo",
             " initial_joint_positions_path:=",
-            PathSubstitution(
-                FindPackageShare(LaunchConfiguration("init_jnt_pos_pkg"))
-            )
+            PathSubstitution(FindPackageShare(LaunchConfiguration("init_jnt_pos_pkg")))
             / LaunchConfiguration("init_jnt_pos"),
         ]
     )
@@ -100,14 +98,65 @@ def _embed_robot_in_world(context, *args, **kwargs):
     # ── 5. Fallback: if gz sdf failed, inline the URDF via <include> ─
     if model_block is None:
         model_block = (
-            f'<include>'
-            f'<uri>file://{urdf_path}</uri>'
-            f'<name>{robot_name}</name>'
-            f'<pose>0 0 0 0 0 0</pose>'
-            f'</include>'
+            f"<include>"
+            f"<uri>file://{urdf_path}</uri>"
+            f"<name>{robot_name}</name>"
+            f"<pose>0 0 0 0 0 0</pose>"
+            f"</include>"
         )
 
-    # ── 6. Generate the world SDF with the model EMBEDDED ───────────
+    # ── 6. Generate the world SDF with the robot embedded AND a     ──
+    #      separate "ghost" screen model for cross-model collision.  ──
+    #      Workaround for gz-sim #3261 / #2957: self_collide is      ──
+    #      ignored on spawned/included URDF models, but cross-model   ──
+    #      collision between SEPARATE models always works.            ──
+    #      By placing the screen as an independent static model,      ──
+    #      the sponge-tool will collide with it regardless of the     ──
+    #      robot model's broken self_collide.                         ──
+
+    # Screen position in world coordinates (matches iiwa7.xacro):
+    #   lbr_base_link origin:  0, 0, 0.660  (lbr_world_base_joint)
+    #   screen collision:     -0.2195, 0, 0.1615  (relative to base_link)
+    #   → world:              -0.2195, 0, 0.8215
+    screen_x = -0.2195
+    screen_y = 0.0
+    screen_z = 0.8215
+    screen_box = "0.389 0.705 0.323"
+
+    # Ghost screen: separate static model so physics ALWAYS checks
+    # collision against the robot tool chain (cross-model).
+    ghost_screen = f"""
+    <model name="screen_collision" canonical="true">
+      <static>true</static>
+      <pose>{screen_x} {screen_y} {screen_z} 0 0 0</pose>
+      <link name="screen_link">
+        <collision name="screen_collision">
+          <geometry>
+            <box>
+              <size>{screen_box}</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <ode>
+                <kp>100000.0</kp>
+                <kd>100.0</kd>
+                <max_vel>0.01</max_vel>
+                <min_depth>0.001</min_depth>
+              </ode>
+            </contact>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.3</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+      </link>
+    </model>
+"""
+
     world_sdf = f"""<?xml version="1.0" ?>
 <sdf version="1.9">
   <world name="empty">
@@ -126,6 +175,7 @@ def _embed_robot_in_world(context, *args, **kwargs):
     </plugin>
 
 {model_block}
+{ghost_screen}
   </world>
 </sdf>"""
 
