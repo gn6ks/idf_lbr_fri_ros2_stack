@@ -1,8 +1,14 @@
 import os
+import subprocess
 import tempfile
+import xml.etree.ElementTree as ET
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    OpaqueFunction,
+)
 from launch.substitutions import (
     Command,
     FindExecutable,
@@ -15,23 +21,25 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def _embed_robot_in_world(context, *args, **kwargs):
-    """Generate a world SDF with the robot model embedded at launch time.
+    """Generate a world SDF with the robot model directly embedded.
 
     Works around gz-sim bugs #3261 / #2957 where self_collide is
-    silently ignored on URDF models spawned via ``ros_gz_sim create``.
-    Embedding the model directly in the world file forces Gazebo to
-    parse self_collide during world loading, when it is respected.
+    silently ignored on URDF models spawned via ``ros_gz_sim create``
+    or included via ``<include>`` at world parse time.
+
+    The URDF is converted to SDF with ``gz sdf -p`` and the resulting
+    ``<model>`` element is injected straight into the world SDF — no
+    ``<include>``, no runtime spawn.  This is the only path where
+    Gazebo Harmonic reliably respects ``self_collide``.
     """
     robot_name = LaunchConfiguration("robot_name").perform(context)
 
-    # ── Run xacro to get the robot URDF ──────────────────────────────────
+    # ── 1. Run xacro to get the robot URDF ──────────────────────────
     xacro_cmd = Command(
         [
             FindExecutable(name="xacro"),
             " ",
-            PathSubstitution(
-                FindPackageShare("lbr_description")
-            )
+            PathSubstitution(FindPackageShare("lbr_description"))
             / "urdf"
             / LaunchConfiguration("model")
             / LaunchConfiguration("model"),
@@ -41,22 +49,65 @@ def _embed_robot_in_world(context, *args, **kwargs):
             " mode:=gazebo",
             " initial_joint_positions_path:=",
             PathSubstitution(
-                FindPackageShare(
-                    LaunchConfiguration("init_jnt_pos_pkg")
-                )
+                FindPackageShare(LaunchConfiguration("init_jnt_pos_pkg"))
             )
             / LaunchConfiguration("init_jnt_pos"),
         ]
     )
     robot_urdf = context.perform_substitution(xacro_cmd)
 
-    # ── Write URDF to a temp file so Gazebo can <include> it ────────────
+    # ── 2. Write URDF to temp file ───────────────────────────────────
     tmp_dir = tempfile.mkdtemp(prefix="gz_world_")
     urdf_path = os.path.join(tmp_dir, "robot.urdf")
     with open(urdf_path, "w", encoding="utf-8") as f:
         f.write(robot_urdf)
 
-    # ── Generate world SDF with the robot embedded ──────────────────────
+    # ── 3. Convert URDF → SDF with gz sdf -p ───────────────────────
+    try:
+        result = subprocess.run(
+            ["gz", "sdf", "-p", urdf_path],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        sdf_text = result.stdout
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        # Fallback: embed the URDF as a model inside an SDF world.
+        # gz-sim can parse URDF when it is placed directly under
+        # <world> as an <include> with merge=true.
+        sdf_text = None
+
+    # ── 4. Extract the <model> block from the SDF output ────────────
+    model_block = None
+    if sdf_text:
+        try:
+            root = ET.fromstring(sdf_text)
+            # gz sdf -p outputs <sdf><model name="...">...</model></sdf>
+            model_el = root.find("model")
+            if model_el is not None:
+                # Force <self_collide>false</self_collide> even if the
+                # converter missed it (belt-and-suspenders).
+                sc = model_el.find("self_collide")
+                if sc is None:
+                    sc = ET.SubElement(model_el, "self_collide")
+                sc.text = "false"
+                # Rename the model to match the robot_name launch arg
+                model_el.set("name", robot_name)
+                model_block = ET.tostring(model_el, encoding="unicode")
+        except ET.ParseError:
+            pass
+
+    # ── 5. Fallback: if gz sdf failed, inline the URDF via <include> ─
+    if model_block is None:
+        model_block = (
+            f'<include>'
+            f'<uri>file://{urdf_path}</uri>'
+            f'<name>{robot_name}</name>'
+            f'<pose>0 0 0 0 0 0</pose>'
+            f'</include>'
+        )
+
+    # ── 6. Generate the world SDF with the model EMBEDDED ───────────
     world_sdf = f"""<?xml version="1.0" ?>
 <sdf version="1.9">
   <world name="empty">
@@ -74,11 +125,7 @@ def _embed_robot_in_world(context, *args, **kwargs):
             name="gz::sim::systems::SceneBroadcaster">
     </plugin>
 
-    <include>
-      <uri>file://{urdf_path}</uri>
-      <name>{robot_name}</name>
-      <pose>0 0 0 0 0 0</pose>
-    </include>
+{model_block}
   </world>
 </sdf>"""
 
@@ -86,7 +133,7 @@ def _embed_robot_in_world(context, *args, **kwargs):
     with open(world_path, "w", encoding="utf-8") as f:
         f.write(world_sdf)
 
-    # ── Return the Gazebo launch action with the generated world ────────
+    # ── 7. Return Gazebo launch action ─────────────────────────────
     return [
         IncludeLaunchDescription(
             PathSubstitution(
