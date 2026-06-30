@@ -199,27 +199,6 @@
     </joint>
     -->
 
-    <xacro:macro name="preserve_fixed" params="joint_name">
-        <gazebo reference="${joint_name}">
-            <preserveFixedJoint>true</preserveFixedJoint>
-        </gazebo>
-    </xacro:macro>
-
-    <xacro:preserve_fixed joint_name="lbr_link_7_brida_cam_base_joint" />
-    <xacro:preserve_fixed joint_name="lbr_link_7_brida_cam_tip_joint" />
-    <!-- brida_cam_tip_ft45_base_joint ya la tienes preservada via ft_gazebo_plugin -->
-    <xacro:preserve_fixed joint_name="brida_cam_tip_ft45_tip_joint" />
-    <xacro:preserve_fixed joint_name="ft45_tip_brida_ft_base_joint" />
-    <xacro:preserve_fixed joint_name="ft45_tip_brida_ft_tip_joint" />
-    <xacro:preserve_fixed joint_name="brida_ft_tip_tool_body_joint" />
-    <xacro:preserve_fixed joint_name="brida_ft_tip_tool_body_tip_joint" />
-    <xacro:preserve_fixed joint_name="tool_sponge_joint" />
-    <xacro:preserve_fixed joint_name="tool_body_tip_tool_tip_joint" />
-    <xacro:preserve_fixed joint_name="lbr_joint_ee" />
-    
-    <!-- Carro/pantalla: separarlo también de lbr_link_0 -->
-    <xacro:preserve_fixed joint_name="lbr_base_robot_joint" />
-
     <!-- ============================================================ -->
     <!-- GAZEBO CONTACT/Collision SURFACES for links missing references -->
     <!-- Without these, Gazebo Ignition will not resolve contacts     -->
