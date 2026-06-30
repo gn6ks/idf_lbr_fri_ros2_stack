@@ -1,6 +1,16 @@
 <?xml version="1.0" ?>
 <robot name="iiwa7" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+    <!-- ============================================================ -->
+    <!-- Explicitly enable self-collision for the entire model.        -->
+    <!-- Without this, Gazebo Ignition/DART may skip collision checks  -->
+    <!-- between links welded via fixed joints within the same model.  -->
+    <!-- false = self-collision ENABLED (links CAN collide).           -->
+    <!-- ============================================================ -->
+    <gazebo>
+        <selfCollide>false</selfCollide>
+    </gazebo>
+
     <!-- caja, pasar a primitiva para la colision? ahorra computo creo-->
     <xacro:property name="base_mass" value="40.0" />
     <xacro:property name="robot_offset_x" value="0.40" />
