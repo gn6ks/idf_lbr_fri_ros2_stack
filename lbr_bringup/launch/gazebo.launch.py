@@ -89,7 +89,15 @@ def generate_launch_description() -> LaunchDescription:
                 )
                 / "launch"
                 / "gz_sim.launch.py",
-                launch_arguments={"gz_args": "-r empty.sdf"}.items(),
+                launch_arguments={
+                    "gz_args": [
+                        "-r ",
+                        PathSubstitution(
+                            FindPackageShare("lbr_bringup"),
+                        ),
+                        "/worlds/empty_dart_self_collide.sdf",
+                    ]
+                }.items(),
             ),
             Node(
                 package="ros_gz_bridge",
