@@ -1,5 +1,8 @@
+import os
+import tempfile
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.substitutions import (
     Command,
     FindExecutable,
@@ -7,10 +10,93 @@ from launch.substitutions import (
     PathSubstitution,
 )
 from launch_ros.actions import Node
-from launch_ros.parameter_descriptions import (
-    ParameterValue,  # nuevo parametro description para forzar el tipo con str
-)
+from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
+
+
+def _embed_robot_in_world(context, *args, **kwargs):
+    """Generate a world SDF with the robot model embedded at launch time.
+
+    Works around gz-sim bugs #3261 / #2957 where self_collide is
+    silently ignored on URDF models spawned via ``ros_gz_sim create``.
+    Embedding the model directly in the world file forces Gazebo to
+    parse self_collide during world loading, when it is respected.
+    """
+    robot_name = LaunchConfiguration("robot_name").perform(context)
+
+    # ── Run xacro to get the robot URDF ──────────────────────────────────
+    xacro_cmd = Command(
+        [
+            FindExecutable(name="xacro"),
+            " ",
+            PathSubstitution(
+                FindPackageShare("lbr_description")
+            )
+            / "urdf"
+            / LaunchConfiguration("model")
+            / LaunchConfiguration("model"),
+            ".xacro",
+            " robot_name:=",
+            LaunchConfiguration("robot_name"),
+            " mode:=gazebo",
+            " initial_joint_positions_path:=",
+            PathSubstitution(
+                FindPackageShare(
+                    LaunchConfiguration("init_jnt_pos_pkg")
+                )
+            )
+            / LaunchConfiguration("init_jnt_pos"),
+        ]
+    )
+    robot_urdf = context.perform_substitution(xacro_cmd)
+
+    # ── Write URDF to a temp file so Gazebo can <include> it ────────────
+    tmp_dir = tempfile.mkdtemp(prefix="gz_world_")
+    urdf_path = os.path.join(tmp_dir, "robot.urdf")
+    with open(urdf_path, "w", encoding="utf-8") as f:
+        f.write(robot_urdf)
+
+    # ── Generate world SDF with the robot embedded ──────────────────────
+    world_sdf = f"""<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="empty">
+    <physics name="1ms" type="dart">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin filename="gz-sim-physics-system"
+            name="gz::sim::systems::Physics">
+    </plugin>
+    <plugin filename="gz-sim-user-commands-system"
+            name="gz::sim::systems::UserCommands">
+    </plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system"
+            name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+
+    <include>
+      <uri>file://{urdf_path}</uri>
+      <name>{robot_name}</name>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+  </world>
+</sdf>"""
+
+    world_path = os.path.join(tmp_dir, "world.sdf")
+    with open(world_path, "w", encoding="utf-8") as f:
+        f.write(world_sdf)
+
+    # ── Return the Gazebo launch action with the generated world ────────
+    return [
+        IncludeLaunchDescription(
+            PathSubstitution(
+                FindPackageShare("ros_gz_sim"),
+            )
+            / "launch"
+            / "gz_sim.launch.py",
+            launch_arguments={"gz_args": f"-r {world_path}"}.items(),
+        ),
+    ]
 
 
 def generate_launch_description() -> LaunchDescription:
@@ -25,7 +111,11 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 name="robot_name",
                 default_value="lbr",
-                description="The robot's name. Links in the tf tree will be prefixed as <robot_name>_link. Same applies to joints. The robot's name will be used as namespace.",
+                description=(
+                    "The robot's name. Links in the tf tree will be prefixed as "
+                    "<robot_name>_link. Same applies to joints. "
+                    "The robot's name will be used as namespace."
+                ),
             ),
             DeclareLaunchArgument(
                 name="init_jnt_pos_pkg",
@@ -35,12 +125,19 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 name="init_jnt_pos",
                 default_value="ros2_control/initial_joint_positions.yaml",
-                description="The relative path from sys_cfg_pkg to the initial_joint_positions.yaml file.",
+                description=(
+                    "The relative path from sys_cfg_pkg to the "
+                    "initial_joint_positions.yaml file."
+                ),
             ),
             DeclareLaunchArgument(
                 name="ctrl",
                 default_value="joint_trajectory_controller",
-                description="Desired default controller. Gazebo loads controller configuration through lbr_description/gazebo/*.xacro from lbr_description/ros2_control/gazebo_controllers.yaml.",
+                description=(
+                    "Desired default controller. Gazebo loads controller "
+                    "configuration through lbr_description/gazebo/*.xacro from "
+                    "lbr_description/ros2_control/gazebo_controllers.yaml."
+                ),
                 choices=[
                     "forward_position_controller",
                     "joint_trajectory_controller",
@@ -52,7 +149,7 @@ def generate_launch_description() -> LaunchDescription:
                 output="screen",
                 parameters=[
                     {
-                        "robot_description": ParameterValue(  # se envuelve aqui
+                        "robot_description": ParameterValue(
                             Command(
                                 [
                                     FindExecutable(name="xacro"),
@@ -76,29 +173,19 @@ def generate_launch_description() -> LaunchDescription:
                                     / LaunchConfiguration("init_jnt_pos"),
                                 ]
                             ),
-                            value_type=str,  # fuerza tipo string para que se trague la descripcion entera
+                            value_type=str,
                         )
                     },
                     {"use_sim_time": True},
                 ],
                 namespace=LaunchConfiguration("robot_name"),
             ),
-            IncludeLaunchDescription(
-                PathSubstitution(
-                    FindPackageShare("ros_gz_sim"),
-                )
-                / "launch"
-                / "gz_sim.launch.py",
-                launch_arguments={
-                    "gz_args": [
-                        "-r ",
-                        PathSubstitution(
-                            FindPackageShare("lbr_bringup"),
-                        ),
-                        "/worlds/empty_dart_self_collide.sdf",
-                    ]
-                }.items(),
-            ),
+            # ── Gazebo with robot embedded in the world SDF ──
+            # This replaces the old IncludeLaunchDescription(gz_sim) +
+            # ros_gz_sim create pattern.  The robot is included via
+            # <include> in a generated world file so that self_collide
+            # is respected (gz-sim #3261, #2957).
+            OpaqueFunction(function=_embed_robot_in_world),
             Node(
                 package="ros_gz_bridge",
                 executable="parameter_bridge",
@@ -107,31 +194,6 @@ def generate_launch_description() -> LaunchDescription:
                     "/ft_sensor/wrench@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench",
                 ],
                 output="screen",
-            ),
-            Node(
-                package="ros_gz_sim",
-                executable="create",
-                arguments=[
-                    "-topic",
-                    "robot_description",
-                    "-name",
-                    LaunchConfiguration("robot_name"),
-                    "-allow_renaming",
-                    "-x",
-                    "0.0",
-                    "-y",
-                    "0.0",
-                    "-z",
-                    "0.0",
-                    "-R",
-                    "0.0",
-                    "-P",
-                    "0.0",
-                    "-Y",
-                    "0.0",
-                ],
-                output="screen",
-                namespace=LaunchConfiguration("robot_name"),
             ),
             Node(
                 package="controller_manager",
