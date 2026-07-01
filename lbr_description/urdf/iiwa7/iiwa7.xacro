@@ -178,32 +178,6 @@
     <link name="$(arg robot_name)_link_ee">
     </link>
 
-    <!-- TCP alternativo fijo desde link_7 para IK -->
-    <!-- no uso el dummy para que no haya una duplicidad de los puntos TCP, sin cambios, no funciona la optimizacion igualmente -->
-    <!--
-    <link name="tool_tip_dummy" />
-    <joint name="$(arg robot_name)_link_7-tool_tip_dummy" type="fixed">
-        <parent link="tool_tip" />
-        <child link="tool_tip_dummy" />
-        <origin xyz="0 0 0" rpy="0 0 ${pi}" />
-    </joint>
-    -->
-
-    <!-- Base structure: world ↔ base_link ↔ link_0 -->
-    <xacro:preserve_fixed joint_name="lbr_world_base_joint" />
-    <xacro:preserve_fixed joint_name="lbr_base_robot_joint" />
-
-    <!-- Carrito / pantalla: superficie rígida (metal/plástico) -->
-    <gazebo reference="$(arg robot_name)_base_link">
-        <kp>100000.0</kp>          <!-- contact stiffness (N/m), alto = rígido -->
-        <kd>100.0</kd>             <!-- contact damping (N·s/m) -->
-        <mu1>0.5</mu1>             <!-- fricción estática -->
-        <mu2>0.3</mu2>             <!-- fricción dinámica -->
-        <maxVel>0.01</maxVel>      <!-- velocidad máxima de contacto -->
-        <minDepth>0.001</minDepth> <!-- penetración mínima antes de resolver -->
-        <maxContacts>4</maxContacts>
-    </gazebo>
-
     <!-- Brida cámara (extremo link_7) -->
     <gazebo reference="brida_cam_base">
         <kp>100000.0</kp>
