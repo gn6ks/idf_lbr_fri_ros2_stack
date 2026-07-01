@@ -125,6 +125,42 @@ def generate_launch_description() -> LaunchDescription:
                 output="screen",
                 namespace=LaunchConfiguration("robot_name"),
             ),
+            # Independent ghost model for screen collision.
+            # Spawned as a separate static model so the physics engine
+            # treats it as a distinct rigid body from the robot —
+            # cross-model collision always works, avoiding the
+            # self_collide issues of single-model URDF/SDF.
+            # Pose in world coords = screen_local_offset + base_link_to_world:
+            #   (-0.2195, 0, 0.1615) + (0, 0, 0.660) = (-0.2195, 0, 0.8215)
+            Node(
+                package="ros_gz_sim",
+                executable="create",
+                arguments=[
+                    "-file",
+                    PathSubstitution(
+                        FindPackageShare("lbr_description")
+                    )
+                    / "models"
+                    / "screen_ghost"
+                    / "model.sdf",
+                    "-name",
+                    "screen_ghost",
+                    "-allow_renaming",
+                    "-x",
+                    "-0.2195",
+                    "-y",
+                    "0.0",
+                    "-z",
+                    "0.8215",
+                    "-R",
+                    "0.0",
+                    "-P",
+                    "0.0",
+                    "-Y",
+                    "0.0",
+                ],
+                output="screen",
+            ),
             Node(
                 package="controller_manager",
                 executable="spawner",
