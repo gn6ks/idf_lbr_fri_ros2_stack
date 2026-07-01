@@ -1,20 +1,6 @@
 <?xml version="1.0" ?>
 <robot name="iiwa7" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <!-- ============================================================ -->
-    <!-- Explicitly enable self-collision for the entire model.        -->
-    <!-- Without this, Gazebo Ignition/DART may skip collision checks  -->
-    <!-- between links welded via fixed joints within the same model.  -->
-    <!-- false = self-collision ENABLED (links CAN collide).           -->
-    <!--                                                               -->
-    <!-- NOTE: the robot is now embedded in the world SDF at launch    -->
-    <!-- time (gazebo.launch.py) to work around gz-sim bug #3261 /     -->
-    <!-- #2957 where self_collide is ignored on runtime-spawned URDF.  -->
-    <!-- ============================================================ -->
-    <gazebo>
-        <selfCollide>false</selfCollide>
-    </gazebo>
-
     <!-- caja, pasar a primitiva para la colision? ahorra computo creo-->
     <xacro:property name="base_mass" value="40.0" />
     <xacro:property name="robot_offset_x" value="0.40" />
@@ -203,40 +189,9 @@
     </joint>
     -->
 
-    <!-- ============================================================ -->
-    <!-- preserveFixedJoint: prevents Gazebo Ignition from merging     -->
-    <!-- links connected by fixed joints into a single rigid body.     -->
-    <!-- This is CRITICAL for collision detection between the tool     -->
-    <!-- chain (_base links) and the cart/screen.                      -->
-    <!-- Only _base joints are preserved (tip joints are empty dummies -->
-    <!-- that can be safely merged).                                   -->
-    <!-- ============================================================ -->
-    <xacro:macro name="preserve_fixed" params="joint_name">
-        <gazebo reference="${joint_name}">
-            <preserveFixedJoint>true</preserveFixedJoint>
-        </gazebo>
-    </xacro:macro>
-
     <!-- Base structure: world ↔ base_link ↔ link_0 -->
     <xacro:preserve_fixed joint_name="lbr_world_base_joint" />
     <xacro:preserve_fixed joint_name="lbr_base_robot_joint" />
-
-    <!-- Tool chain: preserve all _base joints (child link ends in _base) -->
-    <xacro:preserve_fixed joint_name="lbr_link_7_brida_cam_base_joint" />
-    <xacro:preserve_fixed joint_name="brida_cam_tip_ft45_base_joint" />
-    <xacro:preserve_fixed joint_name="ft45_tip_brida_ft_base_joint" />
-    <xacro:preserve_fixed joint_name="brida_ft_tip_tool_body_joint" />
-    <xacro:preserve_fixed joint_name="tool_sponge_joint" />
-
-    <!-- Tip joints (child link ends in _tip) are NOT preserved: they  -->
-    <!-- carry no collision geometry and can be merged safely.          -->
-
-
-    <!-- ============================================================ -->
-    <!-- GAZEBO CONTACT/Collision SURFACES for links missing references -->
-    <!-- Without these, Gazebo Ignition will not resolve contacts     -->
-    <!-- between the tool chain and the cart/screen.                   -->
-    <!-- ============================================================ -->
 
     <!-- Carrito / pantalla: superficie rígida (metal/plástico) -->
     <gazebo reference="$(arg robot_name)_base_link">
