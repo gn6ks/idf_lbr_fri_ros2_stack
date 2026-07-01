@@ -13,8 +13,8 @@
                 <surface>
                     <contact>
                         <ode>
-                            <kp>100000.0</kp>
-                            <kd>100.0</kd>
+                            <kp>5000.0</kp>
+                            <kd>50.0</kd>
                             <max_vel>0.01</max_vel>
                             <min_depth>0.001</min_depth>
                         </ode>

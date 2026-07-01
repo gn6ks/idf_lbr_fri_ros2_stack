@@ -9,7 +9,7 @@ A2:
   lower: -119
   upper: 119
   velocity: 98
-  effort: 200
+  effort: 320
   safety_position_margin: 5
   k_velocity: 10
 A3:
