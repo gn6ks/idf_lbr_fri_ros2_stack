@@ -127,6 +127,36 @@ def generate_launch_description() -> LaunchDescription:
                 output="screen",
                 namespace=LaunchConfiguration("robot_name"),
             ),
+            # Modelo fantasma independiente para la colisión de pantalla.
+            # Pose absoluta en world: offset local de la pantalla (-0.2195, 0, 0.1615)
+            # + offset del base_link en world (0, 0, 0.660) = (-0.2195, 0, 0.8215)
+            Node(
+                package="ros_gz_sim",
+                executable="create",
+                arguments=[
+                    "-file",
+                    PathSubstitution(FindPackageShare("lbr_description"))
+                    / "models"
+                    / "screen_ghost"
+                    / "model.sdf",
+                    "-name",
+                    "screen_ghost",
+                    "-allow_renaming",
+                    "-x",
+                    "-0.2195",
+                    "-y",
+                    "0.0",
+                    "-z",
+                    "0.8215",
+                    "-R",
+                    "0.0",
+                    "-P",
+                    "0.0",
+                    "-Y",
+                    "0.0",
+                ],
+                output="screen",
+            ),
             Node(
                 package="controller_manager",
                 executable="spawner",
