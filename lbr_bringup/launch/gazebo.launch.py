@@ -89,7 +89,7 @@ def generate_launch_description() -> LaunchDescription:
                 )
                 / "launch"
                 / "gz_sim.launch.py",
-                launch_arguments={"gz_args": "-r empty.sdf"}.items(),
+                launch_arguments={"gz_args": "-r empty.sdf --physics-engine ode"}.items(),
             ),
             Node(
                 package="ros_gz_bridge",
@@ -137,9 +137,7 @@ def generate_launch_description() -> LaunchDescription:
                 executable="create",
                 arguments=[
                     "-file",
-                    PathSubstitution(
-                        FindPackageShare("lbr_description")
-                    )
+                    PathSubstitution(FindPackageShare("lbr_description"))
                     / "models"
                     / "screen_ghost"
                     / "model.sdf",
