@@ -1,9 +1,9 @@
 A1:
-  lower: -169 # each lower / upper limit is 1 degree stricter to avoid hard limits
+  lower: -169
   upper: 169
   velocity: 85
   effort: 2000
-  safety_position_margin: 5 # inside the URDF, we compute k_position=velocity/safety_position_margin
+  safety_position_margin: 5
   k_velocity: 10
 A2:
   lower: -119
