@@ -200,17 +200,29 @@
 
       <link name="${name}_tip"/>
 
-      <joint name="${parent}_${name}_tip_joint" type="fixed">
+      <!-- <joint name="${parent}_${name}_tip_joint" type="fixed">
         <origin xyz="0 0 0.036" rpy="0 0 0"/>
         <parent link="${name}_base"/>
         <child link="${name}_tip"/>
-      </joint>
+      </joint> -->
+
+      <joint name="${robot_name}_tip_joint" type="revolute">
+       <origin xyz="0 0 0.036" rpy="0 0 0"/>
+       <parent link="${name}_base"/>
+       <child link="${name}_tip"/>
+       <axis xyz="0.0 0.0 1.0" />
+        <limit
+                effort="1000000"
+                lower="0"
+                upper="0"
+                velocity="0" />
+    </joint>
 
     </xacro:macro>
 
     <xacro:macro name="conditioning_sponge_red" params="name parent *origin">
 
-      <joint name="${name}_sponge_joint" type="fixed">
+      <joint name="${name}_sponge_joint" type="revolute">
         <xacro:insert_block name="origin" />
         <parent link="${parent}"/>
         <child link="${name}_base"/>
@@ -238,10 +250,22 @@
 
     <link name="${name}_tip"/>
 
-    <joint name="${parent}_${name}_tip_joint" type="fixed">
+    <!-- <joint name="${parent}_${name}_tip_joint" type="fixed">
       <origin xyz="0 0 0.0262" rpy="0 0 0"/>
       <parent link="${name}_base"/>
       <child link="${name}_tip"/>
+    </joint -->
+
+    <joint name="${robot_name}_tip_joint" type="revolute">
+      <origin xyz="0 0 0.0262" rpy="0 0 0"/>
+      <parent link="${name}_base"/>
+      <child link="${name}_tip"/>
+      <axis xyz="0.0 0.0 1.0" />
+        <limit
+                effort="1000000"
+                lower="0"
+                upper="0"
+                velocity="0" />
     </joint>
 
     </xacro:macro>
