@@ -3,7 +3,7 @@
   <model name="box_collision">
     <link name="link">
       <inertial>
-        <mass>1.0</mass>
+        <mass>100.0</mass>
         <inertia>
           <ixx>0.001667</ixx>
           <ixy>0.0</ixy>
