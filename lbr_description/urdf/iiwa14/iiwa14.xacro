@@ -99,12 +99,12 @@
             </geometry>
         </visual>
         <!-- caja simplificada para tratar de optimizar el codigo -->
-        <!-- <collision>
+        <collision>
             <origin xyz="0 0 -0.33" rpy="0 0 0" />
             <geometry>
                 <box size="1.055 0.705 0.660" />
             </geometry>
-        </collision> -->
+        </collision>
         <!-- colisión de pantalla movida al modelo independiente screen_ghost -->
         <!-- <collision>
             <origin xyz="-0.2195 0 0.1615" rpy="0 0 0" />
