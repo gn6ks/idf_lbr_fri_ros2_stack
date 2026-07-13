@@ -160,6 +160,33 @@ def generate_launch_description() -> LaunchDescription:
                 output="screen",
             ),
             Node(
+                package="ros_gz_sim",
+                executable="create",
+                arguments=[
+                    "-file",
+                    PathSubstitution(FindPackageShare("lbr_description"))
+                    / "models"
+                    / "box_collision"
+                    / "model.sdf",
+                    "-name",
+                    "box_collision",
+                    "-allow_renaming",
+                    "-x",
+                    "0.4",
+                    "-y",
+                    "0.0",
+                    "-z",
+                    "2.0742",
+                    "-R",
+                    "0.0",
+                    "-P",
+                    "0.0",
+                    "-Y",
+                    "0.0",
+                ],
+                output="screen",
+            ),
+            Node(
                 package="controller_manager",
                 executable="spawner",
                 output="screen",
