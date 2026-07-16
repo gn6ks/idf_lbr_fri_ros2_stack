@@ -71,7 +71,7 @@
 
     <!-- plugin FT sobre joint: world_ft45_tip_joint -->
     <xacro:ft_gazebo_plugin
-        ft_joint_name="world_ft45_tip_joint"
+        ft_joint_name="world_ft45_base_joint"
         topic_name="ft_sensor/wrench"
         update_rate="200"
     /> <!-- bajado la frecuencia de actualizacion para optimizar, sin cambios -->
