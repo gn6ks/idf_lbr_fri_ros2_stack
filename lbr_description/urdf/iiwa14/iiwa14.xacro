@@ -63,19 +63,55 @@
     will tipple https://github.com/lbr-stack/lbr_fri_ros2_stack/issues/230 -->
     <link name="world" />
 
-    <!-- iiwa description -->
+    <!-- sensor base fixed to world -->
+    <link name="ft45_base">
+        <inertial>
+            <mass value="0.15"/>
+            <origin xyz="0 0 0.0105" rpy="0 0 0"/>
+            <xacro:cylinder_inertia_def radius="0.0225" length="0.021" mass="0.15"/>
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://lbr_description/models/ft_sensor/meshes/visual/FT45.dae"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.0225" length="0.021"/>
+            </geometry>
+        </collision>
+    </link>
 
-    <xacro:ft45 parent="world" name="ft45">
+    <joint name="world_ft45_base_joint" type="fixed">
         <origin xyz="0 0 0" rpy="0 0 ${pi}" />
-    </xacro:ft45>
+        <parent link="world"/>
+        <child link="ft45_base"/>
+    </joint>
 
-    <!-- plugin FT sobre joint: world_ft45_tip_joint -->
+    <link name="ft45_tip">
+        <inertial>
+            <mass value="0.001"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="1e-06" ixy="0" ixz="0" iyy="1e-06" iyz="0" izz="1e-06"/>
+        </inertial>
+    </link>
+
+    <!-- FT measurement joint: dynamic, locked -->
+    <joint name="ft45_sensor_joint" type="revolute">
+        <origin xyz="0 0 0.021" rpy="0 0 0"/>
+        <parent link="ft45_base"/>
+        <child link="ft45_tip"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="1000" velocity="0" lower="0" upper="0"/>
+    </joint>
+
     <xacro:ft_gazebo_plugin
-        ft_joint_name="world_ft45_base_joint"
+        ft_joint_name="ft45_sensor_joint"
         topic_name="ft_sensor/wrench"
         update_rate="200"
-    /> <!-- bajado la frecuencia de actualizacion para optimizar, sin cambios -->
-
+    />
 
       <joint name="sensor_sponge_joint" type="fixed">
         <origin xyz="0 0 0" rpy="0 0 0" />
