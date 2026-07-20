@@ -3,7 +3,6 @@
 <!-- top level -->
 <robot name="iiwa14" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <!-- caja, pasar a primitiva para la colision? ahorra computo creo-->
     <xacro:property name="base_mass" value="40.0" />
     <xacro:property name="robot_offset_x" value="0.40" />
     <xacro:property name="robot_offset_y" value="0.0" />
@@ -76,7 +75,7 @@
     will tipple https://github.com/lbr-stack/lbr_fri_ros2_stack/issues/230 -->
     <link name="world" />
 
-    <!-- base_link (carrito) entre world y link_0 -->
+    <!-- base_link between world and link_0 -->
     <link name="$(arg robot_name)_base_link">
         <inertial>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -98,14 +97,13 @@
                 />
             </geometry>
         </visual>
-        <!-- caja simplificada para tratar de optimizar el codigo -->
+        <!-- simplified box for collision optimization -->
         <!-- <collision>
             <origin xyz="0 0 -0.33" rpy="0 0 0" />
             <geometry>
                 <box size="1.055 0.705 0.660" />
             </geometry>
         </collision> -->
-        <!-- colisión de pantalla movida al modelo independiente screen_ghost -->
         <collision>
             <origin xyz="-0.2195 0 0.1615" rpy="0 0 0" />
             <geometry>
@@ -141,7 +139,6 @@
         robot_name="$(arg robot_name)"
         joint_limits_path="$(arg joint_limits_path)" />
 
-    <!-- cadena: link_7 → brida_cam → ft45 → brida_ft → tool_body → sponge = TCP -->
 
     <xacro:brida_cam parent="$(arg robot_name)_link_7" name="brida_cam">
         <origin xyz="0 0 0.035" rpy="0 0 0" />
@@ -156,7 +153,7 @@
         ft_joint_name="brida_cam_tip_ft45_base_joint"
         topic_name="ft_sensor/wrench"
         update_rate="200"
-    /> <!-- bajado la frecuencia de actualizacion para optimizar, sin cambios -->
+    /> 
 
     <xacro:brida_ft parent="ft45_tip" name="brida_ft">
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -179,7 +176,7 @@
     <link name="$(arg robot_name)_link_ee">
     </link>
 
-    <!-- Brida cámara (extremo link_7) -->
+    <!-- camera link 7 -->
     <!-- <gazebo reference="brida_cam_base">
         <kp>100000.0</kp>
         <kd>100.0</kd>
@@ -211,12 +208,12 @@
         <mu2>0.8</mu2>
     </gazebo>
 
-    <!-- Esponja (tool): material blando, kp/kd más bajos para simular deformabilidad -->
+    <!-- Tool (sponge) -->
     <gazebo reference="tool_base">
         <provideFeedback>true</provideFeedback>
-        <kp>5000.0</kp>            <!-- stiffness bajo = esponja blanda -->
-        <kd>50.0</kd>              <!-- damping moderado -->
-        <mu1>1.0</mu1>             <!-- fricción alta esponja-pantalla -->
+        <kp>5000.0</kp>            <!-- stiffness low -->
+        <kd>50.0</kd>              <!-- damping moderate -->
+        <mu1>1.0</mu1>             <!-- high friction sponge-screen -->
         <mu2>0.8</mu2>
         <maxVel>0.01</maxVel>
         <minDepth>0.0001</minDepth>

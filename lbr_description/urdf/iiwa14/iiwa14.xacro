@@ -1,13 +1,11 @@
 <?xml version="1.0" ?>
 
-<!-- top level -->
 <robot name="iiwa14" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <!-- include the iiwa macro and controller -->
     <xacro:include filename="$(find lbr_description)/models/ft_sensor/real_ft_sensor_macro.xacro" />
     <xacro:include filename="$(find lbr_description)/models/tool/tool.xacro" />
 
-    <!-- arguments -->
     <xacro:arg name="robot_name" default="lbr" />
     <xacro:arg name="mode" default="true" />
     <xacro:arg
@@ -134,8 +132,7 @@
         <collision>
           <origin xyz="0 0 0.015" rpy="0 0 0" />
           <geometry>
-          <!--- forma primitiva para optimizar CPU, calculos propios -->
-          <!-- TODO: revisar las dimensiones del cilindro para que se ajusten a la realidad -->
+          <!--- primitive shape for CPU optimization, custom calculations -->
             <cylinder radius="0.045" length="0.02" />
             <!-- <mesh filename="package://lbr_description/models/tool/meshes/collision/tool_sponge_red.stl"/> -->
           </geometry>
@@ -143,12 +140,12 @@
       </link>
 
 
-    <!-- Esponja (tool): material blando, kp/kd más bajos para simular deformabilidad -->
+    <!-- sponge (tool): bland material for smooth interaction simulation -->
     <gazebo reference="sponge_base">
         <provideFeedback>true</provideFeedback>
-        <kp>5000.0</kp>            <!-- stiffness bajo = esponja blanda -->
-        <kd>50.0</kd>              <!-- damping moderado -->
-        <mu1>1.0</mu1>             <!-- fricción alta esponja-pantalla -->
+        <kp>5000.0</kp>            <!-- stiffness low -->
+        <kd>50.0</kd>              <!-- damping moderate -->
+        <mu1>1.0</mu1>             <!-- high friction -->
         <mu2>0.8</mu2>
         <maxVel>0.01</maxVel>
         <minDepth>0.0001</minDepth>
