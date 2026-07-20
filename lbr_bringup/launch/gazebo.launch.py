@@ -8,7 +8,7 @@ from launch.substitutions import (
 )
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import (
-    ParameterValue,  # nuevo parametro description para forzar el tipo con str
+    ParameterValue,  # new parameter description class to avoid type errors in robot_state_publisher
 )
 from launch_ros.substitutions import FindPackageShare
 
@@ -52,7 +52,7 @@ def generate_launch_description() -> LaunchDescription:
                 output="screen",
                 parameters=[
                     {
-                        "robot_description": ParameterValue(  # se envuelve aqui
+                        "robot_description": ParameterValue(  
                             Command(
                                 [
                                     FindExecutable(name="xacro"),
@@ -76,7 +76,7 @@ def generate_launch_description() -> LaunchDescription:
                                     / LaunchConfiguration("init_jnt_pos"),
                                 ]
                             ),
-                            value_type=str,  # fuerza tipo string para que se trague la descripcion entera
+                            value_type=str,  # forzing the type to str to avoid errors in robot_state_publisher
                         )
                     },
                     {"use_sim_time": True},
@@ -171,7 +171,7 @@ def generate_launch_description() -> LaunchDescription:
                     "-name",
                     "box_collision",
                     "-allow_renaming",
-                    # old position: "-x", "0.4", "-y", "0.0", "-z", "2.13",
+                    # old position (up robot 0 positioning): "-x", "0.4", "-y", "0.0", "-z", "2.13",
                     "-x",
                     "0.0",
                     "-y",
