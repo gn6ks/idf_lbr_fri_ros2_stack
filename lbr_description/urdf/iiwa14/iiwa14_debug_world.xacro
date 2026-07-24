@@ -1,0 +1,155 @@
+<?xml version="1.0" ?>
+
+<robot name="iiwa14" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- include the iiwa macro and controller -->
+    <xacro:include filename="$(find lbr_description)/models/ft_sensor/real_ft_sensor_macro.xacro" />
+    <xacro:include filename="$(find lbr_description)/models/tool/tool.xacro" />
+
+    <xacro:arg name="robot_name" default="lbr" />
+    <xacro:arg name="mode" default="true" />
+    <xacro:arg
+        name="joint_limits_path"
+        default="$(find lbr_description)/urdf/iiwa14/joint_limits.yaml" />
+    <xacro:arg
+        name="system_config_path"
+        default="$(find lbr_description)/ros2_control/lbr_system_config.yaml" />
+    <xacro:arg
+        name="initial_joint_positions_path"
+        default="$(find lbr_description)/ros2_control/initial_joint_positions.yaml" />
+
+    <xacro:macro
+        name="ft_gazebo_plugin"
+        params="ft_joint_name topic_name update_rate:='1000' noise_stddev_force:='0.01' noise_stddev_torque:='0.001'"
+    >
+        <gazebo reference="${ft_joint_name}">
+            <preserveFixedJoint>true</preserveFixedJoint>
+            <sensor name="ft_sensor" type="force_torque">
+                <always_on>true</always_on>
+                <update_rate>${update_rate}</update_rate>
+                <visualize>false</visualize>
+                <force_torque>
+                    <frame>child</frame>
+                    <measure_direction>child_to_parent</measure_direction>
+                    <force>
+                        <x><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_force}</stddev></noise></x>
+                        <y><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_force}</stddev></noise></y>
+                        <z><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_force}</stddev></noise></z>
+                    </force>
+                    <torque>
+                        <x><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_torque}</stddev></noise></x>
+                        <y><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_torque}</stddev></noise></y>
+                        <z><noise type="gaussian"><mean>0.0</mean><stddev
+                                >${noise_stddev_torque}</stddev></noise></z>
+                    </torque>
+                </force_torque>
+                <topic>${topic_name}</topic>
+                <plugin
+                    filename="gz-sim-forcetorque-system"
+                    name="gz::sim::systems::ForceTorque"
+                />
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+
+    <!-- KDL requires a link without inertia / Gazebo requires a connection to world link or robot
+    will tipple https://github.com/lbr-stack/lbr_fri_ros2_stack/issues/230 -->
+    <link name="world" />
+
+    <!-- sensor base fixed to world -->
+    <link name="ft45_base">
+        <inertial>
+            <mass value="0.15"/>
+            <origin xyz="0 0 0.0105" rpy="0 0 0"/>
+            <xacro:cylinder_inertia_def radius="0.0225" length="0.021" mass="0.15"/>
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://lbr_description/models/ft_sensor/meshes/visual/FT45.dae"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.0225" length="0.021"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="world_ft45_base_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 ${pi}" />
+        <parent link="world"/>
+        <child link="ft45_base"/>
+    </joint>
+
+    <link name="ft45_tip">
+        <inertial>
+            <mass value="0.001"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="1e-06" ixy="0" ixz="0" iyy="1e-06" iyz="0" izz="1e-06"/>
+        </inertial>
+    </link>
+
+    <!-- FT measurement joint: dynamic, locked -->
+    <joint name="ft45_sensor_joint" type="revolute">
+        <origin xyz="0 0 0.021" rpy="0 0 0"/>
+        <parent link="ft45_base"/>
+        <child link="ft45_tip"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="1000" velocity="0" lower="0" upper="0"/>
+    </joint>
+
+    <xacro:ft_gazebo_plugin
+        ft_joint_name="ft45_sensor_joint"
+        topic_name="ft_sensor/wrench"
+        update_rate="200"
+    />
+
+      <joint name="sensor_sponge_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="ft45_tip"/>
+        <child link="sponge_base"/>
+      </joint>
+
+      <link name="sponge_base">
+        <inertial>
+          <mass value="0.110" />
+          <origin xyz="-0.009159 -0.01474 0.093085" rpy="0 0 0" />
+          <inertia ixx="0.002444" ixy="-0.000123" ixz="-0.000103" iyy="0.003024" iyz="-5.1e-05" izz="0.001237" />
+        </inertial>
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+            <mesh filename="package://lbr_description/models/tool/meshes/visual/tool_sponge_red.dae"/>
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0 0 0.015" rpy="0 0 0" />
+          <geometry>
+          <!--- primitive shape for CPU optimization, custom calculations -->
+            <cylinder radius="0.045" length="0.02" />
+            <!-- <mesh filename="package://lbr_description/models/tool/meshes/collision/tool_sponge_red.stl"/> -->
+          </geometry>
+        </collision>
+      </link>
+
+
+    <!-- sponge (tool): bland material for smooth interaction simulation -->
+    <gazebo reference="sponge_base">
+        <provideFeedback>true</provideFeedback>
+        <kp>5000.0</kp>            <!-- stiffness low -->
+        <kd>50.0</kd>              <!-- damping moderate -->
+        <mu1>1.0</mu1>             <!-- high friction -->
+        <mu2>0.8</mu2>
+        <maxVel>0.01</maxVel>
+        <minDepth>0.0001</minDepth>
+        <maxContacts>6</maxContacts>
+    </gazebo>
+
+</robot>
