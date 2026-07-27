@@ -130,9 +130,11 @@
     </xacro:macro>
 
     <xacro:macro name="repair_sponge_red" params="name parent *origin
-                 spring_stiffness:=2000.0
-                 spring_damping:=5.0
-                 max_compression:=0.006">
+                 layer_radius:=0.045
+                 layer_length:=0.00333
+                 layer1_stiffness:=4000.0 layer1_damping:=6.0 layer1_max_compression:=0.001
+                 layer2_stiffness:=2500.0 layer2_damping:=4.0 layer2_max_compression:=0.0015
+                 layer3_stiffness:=1200.0 layer3_damping:=3.0 layer3_max_compression:=0.002">
 
       <!-- Montaje rigido de la base de la esponja al tool_body -->
       <joint name="${name}_mount_joint" type="fixed">
@@ -154,7 +156,7 @@
           </geometry>
         </visual>
         <!-- Nucleo rigido: coleccion mas pequena/anidada que la esponja real.
-             El "colchon" de compresion lo aporta el link movil de abajo -->
+             El "colchon" de compresion lo aportan las 3 capas de abajo -->
         <collision>
           <origin xyz="0 0 0.0075" rpy="0 0 0" />
           <geometry>
@@ -163,35 +165,113 @@
         </collision>
       </link>
 
-      <!-- Joint prismatico con resorte articulado: esto simula el material blando.
-           DART no soporta compliance de contacto real vía kp/kd, pero sí soporta
-           spring_stiffness/spring_reference en joints vía axis/dynamics. -->
-      <joint name="${name}_sponge_prismatic_joint" type="prismatic">
-        <origin xyz="0 0 0.0075" rpy="0 0 0" />
+      <!-- ==========================================================
+           CAPAS DE LA ESPONJA (discretizacion en serie).
+           Cada capa es su propio link con su propio joint prismatico +
+           resorte (dynamics spring_stiffness/spring_reference). Las 3
+           capas se apilan de forma CONSECUTIVA (cada joint desplaza
+           exactamente "layer_length" desde el tope de la capa anterior),
+           por lo que las colisiones NUNCA se solapan entre si.
+
+           Capa 1 = mas cercana al nucleo rigido (mas rigida, simula la
+                    base comprimida de la esponja).
+           Capa 3 = capa de contacto con la superficie (mas blanda, es
+                    la que primero se deforma al tocar).
+
+           NOTA: si en pruebas ves que spring_stiffness/spring_reference
+           no producen fuerza real en gz-sim (bug conocido, ver
+           https://github.com/gazebosim/gz-sim/issues/2520), la
+           alternativa es sustituir estos 3 joints por un system plugin
+           tipo SpringSystem que aplique la fuerza explicitamente sobre
+           cada joint en cada paso de simulacion.
+           ========================================================== -->
+
+      <!-- Capa 1: pegada al nucleo rigido -->
+      <joint name="${name}_layer1_joint" type="prismatic">
+        <origin xyz="0 0 0.0115" rpy="0 0 0" />
         <parent link="${name}_base"/>
-        <child link="${name}_base2"/>
+        <child link="${name}_layer1"/>
         <axis xyz="0 0 1" />
-        <limit lower="-${max_compression}" upper="0" effort="50" velocity="0.5" />
-        <dynamics damping="${spring_damping}" spring_stiffness="${spring_stiffness}" spring_reference="0.0" />
+        <limit lower="-${layer1_max_compression}" upper="0" effort="50" velocity="0.5" />
+        <dynamics damping="${layer1_damping}" spring_stiffness="${layer1_stiffness}" spring_reference="0.0" />
       </joint>
 
-      <link name="${name}_base2">
+      <link name="${name}_layer1">
         <inertial>
-          <mass value="0.02" />
-          <origin xyz="0 0 0.005" rpy="0 0 0" />
-          <inertia ixx="0.0002" ixy="0.0" ixz="0.0" iyy="0.0002" iyz="0.0" izz="0.0002" />
+          <mass value="0.007" />
+          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
+          <inertia ixx="7e-05" ixy="0.0" ixz="0.0" iyy="7e-05" iyz="0.0" izz="7e-05" />
         </inertial>
         <visual>
-          <origin xyz="0 0 0.0075" rpy="0 0 0" />
+          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
           <geometry>
-            <cylinder radius="0.045" length="0.01" />
+            <cylinder radius="${layer_radius}" length="${layer_length}" />
           </geometry>
         </visual>
-        <!-- Coleccion "real" de la esponja: la que toca la pantalla y se comprime -->
         <collision>
-          <origin xyz="0 0 0.0075" rpy="0 0 0" />
+          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
           <geometry>
-            <cylinder radius="0.045" length="0.01" />
+            <cylinder radius="${layer_radius}" length="${layer_length}" />
+          </geometry>
+        </collision>
+      </link>
+
+      <!-- Capa 2: intermedia -->
+      <joint name="${name}_layer2_joint" type="prismatic">
+        <origin xyz="0 0 ${layer_length}" rpy="0 0 0" />
+        <parent link="${name}_layer1"/>
+        <child link="${name}_layer2"/>
+        <axis xyz="0 0 1" />
+        <limit lower="-${layer2_max_compression}" upper="0" effort="50" velocity="0.5" />
+        <dynamics damping="${layer2_damping}" spring_stiffness="${layer2_stiffness}" spring_reference="0.0" />
+      </joint>
+
+      <link name="${name}_layer2">
+        <inertial>
+          <mass value="0.007" />
+          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
+          <inertia ixx="7e-05" ixy="0.0" ixz="0.0" iyy="7e-05" iyz="0.0" izz="7e-05" />
+        </inertial>
+        <visual>
+          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
+          <geometry>
+            <cylinder radius="${layer_radius}" length="${layer_length}" />
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
+          <geometry>
+            <cylinder radius="${layer_radius}" length="${layer_length}" />
+          </geometry>
+        </collision>
+      </link>
+
+      <!-- Capa 3: capa de contacto (la que toca la superficie) -->
+      <joint name="${name}_layer3_joint" type="prismatic">
+        <origin xyz="0 0 ${layer_length}" rpy="0 0 0" />
+        <parent link="${name}_layer2"/>
+        <child link="${name}_layer3"/>
+        <axis xyz="0 0 1" />
+        <limit lower="-${layer3_max_compression}" upper="0" effort="50" velocity="0.5" />
+        <dynamics damping="${layer3_damping}" spring_stiffness="${layer3_stiffness}" spring_reference="0.0" />
+      </joint>
+
+      <link name="${name}_layer3">
+        <inertial>
+          <mass value="0.007" />
+          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
+          <inertia ixx="7e-05" ixy="0.0" ixz="0.0" iyy="7e-05" iyz="0.0" izz="7e-05" />
+        </inertial>
+        <visual>
+          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
+          <geometry>
+            <cylinder radius="${layer_radius}" length="${layer_length}" />
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
+          <geometry>
+            <cylinder radius="${layer_radius}" length="${layer_length}" />
           </geometry>
         </collision>
       </link>
@@ -199,8 +279,8 @@
     <link name="${name}_tip"/>
 
     <joint name="${parent}_${name}_tip_joint" type="fixed">
-      <origin xyz="0 0 0.0162" rpy="0 0 0"/>
-      <parent link="${name}_base2"/>
+      <origin xyz="0 0 ${layer_length}" rpy="0 0 0"/>
+      <parent link="${name}_layer3"/>
       <child link="${name}_tip"/>
     </joint>
 
