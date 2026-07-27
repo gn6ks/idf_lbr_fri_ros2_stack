@@ -60,32 +60,6 @@
         </collision>
       </link>
 
-      <!-- <joint name="${name}_base_joint" type="fixed">
-        <origin xyz="0 0 0.056" rpy="0 0 0"/>
-        <parent link="${name}_brida"/>
-        <child link="${name}_base"/>
-      </joint>
-
-      <link name="${name}_base">
-        <inertial>
-          <mass value="1.1" />
-          <origin xyz="-0.011278 -0.001814 0.052275" rpy="0 0 0" />
-          <inertia ixx="0.001483" ixy="-0.000145" ixz="-0.000314" iyy="0.002166" iyz="-9.2e-05" izz="0.001375" />
-        </inertial>
-        <visual>
-          <origin xyz="0 0 0" rpy="0 0 0"/>
-          <geometry>
-                  <mesh filename="package://kuka_control/models/tool/meshes/visual/Airos350CV_red_sponge.dae"/>
-          </geometry>
-        </visual>
-        <collision>
-          <origin xyz="0 0 0" rpy="0 0 0" />
-          <geometry>
-            <mesh filename="package://kuka_control/models/tool/meshes/collision/Airos350CV_red_sponge.stl"/>
-          </geometry>
-        </collision>
-      </link> -->
-
     </xacro:macro>
 
     <xacro:macro name="repair_tool_iiwa" params="name parent *origin">
@@ -111,10 +85,7 @@
         <collision>
           <origin xyz="0 0 0.015" rpy="0 0 0" />
           <geometry>
-          <!--- forma primitiva para optimizar CPU, calculos propios -->
-          <!-- TODO: revisar las dimensiones del cilindro para que se ajusten a la realidad -->
             <cylinder radius="0.03" length="0.03" />
-            <!-- <mesh filename="package://lbr_description/models/tool/meshes/collision/tool_base.stl"/> -->
           </geometry>
         </collision>
       </link>
@@ -131,13 +102,12 @@
 
     <xacro:macro name="repair_sponge_red" params="name parent *origin
                  layer_radius:=0.045
-                 layer_length:=0.00333
+                 layer_length:=0.006667
                  layer1_stiffness:=4000.0 layer1_damping:=6.0 layer1_max_compression:=0.001
                  layer2_stiffness:=2500.0 layer2_damping:=4.0 layer2_max_compression:=0.0015
                  layer3_stiffness:=1200.0 layer3_damping:=3.0 layer3_max_compression:=0.002">
 
-      <!-- Montaje rigido de la base de la esponja al tool_body -->
-      <joint name="${name}_mount_joint" type="fixed">
+      <joint name="${name}_sponge_joint" type="fixed">
         <xacro:insert_block name="origin" />
         <parent link="${parent}"/>
         <child link="${name}_base"/>
@@ -145,7 +115,7 @@
 
       <link name="${name}_base">
         <inertial>
-          <mass value="0.055" />
+          <mass value="0.110" />
           <origin xyz="-0.009159 -0.01474 0.093085" rpy="0 0 0" />
           <inertia ixx="0.002444" ixy="-0.000123" ixz="-0.000103" iyy="0.003024" iyz="-5.1e-05" izz="0.001237" />
         </inertial>
@@ -155,40 +125,10 @@
             <mesh filename="package://lbr_description/models/tool/meshes/visual/tool_sponge_red.dae"/>
           </geometry>
         </visual>
-        <!-- Nucleo rigido: coleccion mas pequena/anidada que la esponja real.
-             El "colchon" de compresion lo aportan las 3 capas de abajo -->
-        <collision>
-          <origin xyz="0 0 0.0075" rpy="0 0 0" />
-          <geometry>
-            <cylinder radius="0.040" length="0.008" />
-          </geometry>
-        </collision>
       </link>
 
-      <!-- ==========================================================
-           CAPAS DE LA ESPONJA (discretizacion en serie).
-           Cada capa es su propio link con su propio joint prismatico +
-           resorte (dynamics spring_stiffness/spring_reference). Las 3
-           capas se apilan de forma CONSECUTIVA (cada joint desplaza
-           exactamente "layer_length" desde el tope de la capa anterior),
-           por lo que las colisiones NUNCA se solapan entre si.
-
-           Capa 1 = mas cercana al nucleo rigido (mas rigida, simula la
-                    base comprimida de la esponja).
-           Capa 3 = capa de contacto con la superficie (mas blanda, es
-                    la que primero se deforma al tocar).
-
-           NOTA: si en pruebas ves que spring_stiffness/spring_reference
-           no producen fuerza real en gz-sim (bug conocido, ver
-           https://github.com/gazebosim/gz-sim/issues/2520), la
-           alternativa es sustituir estos 3 joints por un system plugin
-           tipo SpringSystem que aplique la fuerza explicitamente sobre
-           cada joint en cada paso de simulacion.
-           ========================================================== -->
-
-      <!-- Capa 1: pegada al nucleo rigido -->
       <joint name="${name}_layer1_joint" type="prismatic">
-        <origin xyz="0 0 0.0115" rpy="0 0 0" />
+        <origin xyz="0 0 0.005" rpy="0 0 0" />
         <parent link="${name}_base"/>
         <child link="${name}_layer1"/>
         <axis xyz="0 0 1" />
@@ -198,16 +138,10 @@
 
       <link name="${name}_layer1">
         <inertial>
-          <mass value="0.007" />
+          <mass value="0.0075" />
           <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
           <inertia ixx="7e-05" ixy="0.0" ixz="0.0" iyy="7e-05" iyz="0.0" izz="7e-05" />
         </inertial>
-        <visual>
-          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
-          <geometry>
-            <cylinder radius="${layer_radius}" length="${layer_length}" />
-          </geometry>
-        </visual>
         <collision>
           <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
           <geometry>
@@ -216,7 +150,6 @@
         </collision>
       </link>
 
-      <!-- Capa 2: intermedia -->
       <joint name="${name}_layer2_joint" type="prismatic">
         <origin xyz="0 0 ${layer_length}" rpy="0 0 0" />
         <parent link="${name}_layer1"/>
@@ -228,16 +161,10 @@
 
       <link name="${name}_layer2">
         <inertial>
-          <mass value="0.007" />
+          <mass value="0.0075" />
           <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
           <inertia ixx="7e-05" ixy="0.0" ixz="0.0" iyy="7e-05" iyz="0.0" izz="7e-05" />
         </inertial>
-        <visual>
-          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
-          <geometry>
-            <cylinder radius="${layer_radius}" length="${layer_length}" />
-          </geometry>
-        </visual>
         <collision>
           <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
           <geometry>
@@ -246,7 +173,6 @@
         </collision>
       </link>
 
-      <!-- Capa 3: capa de contacto (la que toca la superficie) -->
       <joint name="${name}_layer3_joint" type="prismatic">
         <origin xyz="0 0 ${layer_length}" rpy="0 0 0" />
         <parent link="${name}_layer2"/>
@@ -258,16 +184,10 @@
 
       <link name="${name}_layer3">
         <inertial>
-          <mass value="0.007" />
+          <mass value="0.0075" />
           <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
           <inertia ixx="7e-05" ixy="0.0" ixz="0.0" iyy="7e-05" iyz="0.0" izz="7e-05" />
         </inertial>
-        <visual>
-          <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
-          <geometry>
-            <cylinder radius="${layer_radius}" length="${layer_length}" />
-          </geometry>
-        </visual>
         <collision>
           <origin xyz="0 0 ${layer_length/2}" rpy="0 0 0" />
           <geometry>
@@ -279,7 +199,7 @@
     <link name="${name}_tip"/>
 
     <joint name="${parent}_${name}_tip_joint" type="fixed">
-      <origin xyz="0 0 ${layer_length}" rpy="0 0 0"/>
+      <origin xyz="0 0 0.007867" rpy="0 0 0"/>
       <parent link="${name}_layer3"/>
       <child link="${name}_tip"/>
     </joint>
@@ -315,12 +235,6 @@
       </link>
 
       <link name="${name}_tip"/>
-
-      <!-- <joint name="${parent}_${name}_tip_joint" type="fixed">
-        <origin xyz="0 0 0.036" rpy="0 0 0"/>
-        <parent link="${name}_base"/>
-        <child link="${name}_tip"/>
-      </joint> -->
 
       <joint name="${robot_name}_tip_joint" type="revolute">
        <origin xyz="0 0 0.036" rpy="0 0 0"/>
@@ -365,12 +279,6 @@
       </link>
 
     <link name="${name}_tip"/>
-
-    <!-- <joint name="${parent}_${name}_tip_joint" type="fixed">
-      <origin xyz="0 0 0.0262" rpy="0 0 0"/>
-      <parent link="${name}_base"/>
-      <child link="${name}_tip"/>
-    </joint -->
 
     <joint name="${robot_name}_tip_joint" type="revolute">
       <origin xyz="0 0 0.0262" rpy="0 0 0"/>
