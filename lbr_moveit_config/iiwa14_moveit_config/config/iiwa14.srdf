@@ -87,6 +87,14 @@
     <disable_collisions link1="brida_ft_base" link2="tool_body_base" reason="Adjacent" />
     <disable_collisions link1="tool_body_base" link2="tool_base" reason="Adjacent" />
 
+    <!-- capas internas de la esponja: adyacentes entre si, nunca deben chocar -->
+    <disable_collisions link1="tool_base" link2="tool_layer1" reason="Adjacent" />
+    <disable_collisions link1="tool_layer1" link2="tool_layer2" reason="Adjacent" />
+    <disable_collisions link1="tool_layer2" link2="tool_layer3" reason="Adjacent" />
+    <disable_collisions link1="tool_base" link2="tool_layer2" reason="Never" />
+    <disable_collisions link1="tool_base" link2="tool_layer3" reason="Never" />
+    <disable_collisions link1="tool_layer1" link2="tool_layer3" reason="Never" />
+
     <!-- herramienta vs links del brazo que nunca colisionan -->
     <disable_collisions link1="brida_cam_base" link2="lbr_link_6" reason="Never" />
     <disable_collisions link1="brida_cam_base" link2="lbr_link_7" reason="Never" />
@@ -95,6 +103,9 @@
     <disable_collisions link1="brida_ft_base" link2="lbr_link_7" reason="Never" />
     <disable_collisions link1="tool_body_base" link2="lbr_link_7" reason="Never" />
     <disable_collisions link1="tool_base" link2="lbr_link_7" reason="Never" />
+    <disable_collisions link1="tool_layer1" link2="lbr_link_7" reason="Never" />
+    <disable_collisions link1="tool_layer2" link2="lbr_link_7" reason="Never" />
+    <disable_collisions link1="tool_layer3" link2="lbr_link_7" reason="Never" />
 
     <!-- mamadongas que van mal con el carro???? -->
     <!-- <disable_collisions link1="ft45_base" link2="lbr_base_link" reason="Never" />
@@ -110,4 +121,12 @@
     <disable_collisions link1="brida_cam_base" link2="tool_base" reason="Never" />
     <disable_collisions link1="ft45_base" link2="tool_base" reason="Never" />
     <disable_collisions link1="brida_ft_base" link2="tool_base" reason="Never" />
+
+    <!-- joints prismaticos pasivos de la esponja (resorte, no actuados por
+         ros2_control): sin declararlos passive, el planning_scene_monitor
+         de MoveIt se queda esperando indefinidamente su joint_state y nunca
+         marca el estado del robot como "known" -->
+    <passive_joint name="tool_layer1_joint"/>
+    <passive_joint name="tool_layer2_joint"/>
+    <passive_joint name="tool_layer3_joint"/>
 </robot>
