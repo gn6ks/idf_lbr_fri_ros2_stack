@@ -167,6 +167,28 @@
         <origin xyz="0 0 0" rpy="0 0 ${pi}" />
     </xacro:repair_sponge_red>
 
+    <!-- state-only interface for passive sponge joints -->
+    <ros2_control name="$(arg robot_name)_tool_passive_interface" type="system">
+        <hardware>
+            <plugin>mock_components/GenericSystem</plugin>
+        </hardware>
+        <joint name="tool_layer1_joint">
+            <state_interface name="position">
+                <param name="initial_value">0.0</param>
+            </state_interface>
+        </joint>
+        <joint name="tool_layer2_joint">
+            <state_interface name="position">
+                <param name="initial_value">0.0</param>
+            </state_interface>
+        </joint>
+        <joint name="tool_layer3_joint">
+            <state_interface name="position">
+                <param name="initial_value">0.0</param>
+            </state_interface>
+        </joint>
+    </ros2_control>
+
     <joint name="$(arg robot_name)_joint_ee" type="fixed">
         <parent link="tool_tip" />
         <child link="$(arg robot_name)_link_ee" />
